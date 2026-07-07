@@ -385,14 +385,10 @@ export class DefaultConnectionFrameHandler implements ConnectionFrameHandler {
 
         return;
       default:
-        this.connection.multiplexerDemultiplexer.connectionOutbound.send({
-          type: FrameTypes.ERROR,
-          streamId: 0,
-          flags: Flags.NONE,
-          message: "Received unknown frame type",
-          code: ErrorCodes.CONNECTION_ERROR,
-        });
-      // TODO: throw an exception and close connection
+        // Per the RSocket spec (lenient frame processing), stray or
+        // unexpected frames on the connection stream (id 0) are ignored
+        // rather than terminating the connection.
+        return;
     }
   }
 

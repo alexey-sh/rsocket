@@ -92,3 +92,34 @@ describe("LeaseHandler.close", () => {
     expect(h2.handleReject).toBeCalledTimes(1);
   });
 });
+
+describe("DefaultConnectionFrameHandler lenient processing", () => {
+  it("ignores stray frames on the connection stream instead of erroring", () => {
+    // Per RSocket spec: stray/unexpected frames on stream 0 MUST be ignored.
+    const mockOutbound = mock<Outbound>();
+    const mockMux = mock<
+      Multiplexer & Demultiplexer & FrameHandler & Closeable
+    >({ connectionOutbound: mockOutbound });
+    const mockConnection = mock<DuplexConnection>({
+      multiplexerDemultiplexer: mockMux,
+    });
+    const handler = new DefaultConnectionFrameHandler(
+      mockConnection,
+      mock<KeepAliveHandler>(),
+      undefined,
+      undefined,
+      {} as Partial<RSocket>
+    );
+
+    handler.handle({
+      type: FrameTypes.PAYLOAD,
+      streamId: 0,
+      flags: Flags.NEXT,
+      data: Buffer.from("x"),
+      metadata: undefined,
+    } as any);
+
+    expect(mockOutbound.send).not.toBeCalled();
+    expect(mockConnection.close).not.toBeCalled();
+  });
+});
