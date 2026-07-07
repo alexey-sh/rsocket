@@ -541,7 +541,7 @@ export class RequestChannelResponderStream
         this.inboundDone = true;
       }
 
-      this.onError(error);
+      this.onError(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
@@ -594,7 +594,7 @@ export class RequestChannelResponderStream
               this.inboundDone = true;
             }
 
-            this.onError(error);
+            this.onError(error instanceof Error ? error : new Error(String(error)));
           }
         } else {
           if (hasComplete) {

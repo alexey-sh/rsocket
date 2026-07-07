@@ -15,10 +15,10 @@ export class MockSocket extends EventEmitter {
     connect: () => {
       this.emit("connect");
     },
-    data: (data) => {
+    data: (data: Buffer) => {
       this.emit("data", data);
     },
-    error: (error) => {
+    error: (error: Error) => {
       this.emit("error", error);
     },
   };
@@ -32,5 +32,5 @@ export const net = {
     net.socket = socket; // for easy accessibility in tests
     return socket;
   }),
-  socket: null,
+  socket: null as MockSocket | null,
 };

@@ -91,7 +91,10 @@ class Observer2BufferingSubscriberToPublisher2PrefetchingObservable<In, Out>
     outputCodec: Codec<Out>,
     scheduler: SchedulerLike = asyncScheduler
   ) {
-    super(exchangeFunction, prefetch, outputCodec, scheduler);
+    // strictFunctionTypes rejects exchangeFunction here: our subscriber param is
+    // narrower (adds Requestable & Cancellable) than the base's. It is passed
+    // straight through to the base unchanged, so the narrowing is safe.
+    super(exchangeFunction as any, prefetch, outputCodec, scheduler);
     this.init(0, undefined, inputCodec);
   }
 

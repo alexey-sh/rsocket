@@ -63,10 +63,10 @@ export class WebsocketClientTransport implements ClientTransport {
         );
       };
 
-      const errorListener = (ev: ErrorEvent) => {
+      const errorListener = (ev: Event) => {
         websocket.removeEventListener("open", openListener);
         websocket.removeEventListener("error", errorListener);
-        reject(ev.error);
+        reject((ev as ErrorEvent).error);
       };
 
       websocket.addEventListener("open", openListener);

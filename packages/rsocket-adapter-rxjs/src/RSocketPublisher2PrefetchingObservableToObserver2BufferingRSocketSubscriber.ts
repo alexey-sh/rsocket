@@ -45,7 +45,7 @@ interface RSocketPublisher2PrefetchingObservableToObserver2BufferingRSocketSubsc
     OnExtensionSubscriber &
     Requestable &
     Cancellable;
-  forEach(x: any);
+  forEach(x: any): any;
 }
 
 class RSocketPublisher2PrefetchingObservableToObserver2BufferingRSocketSubscriber<

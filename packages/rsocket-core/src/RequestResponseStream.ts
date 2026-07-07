@@ -316,7 +316,7 @@ export class RequestResponseResponderStream
     try {
       this.receiver = handler(payload, this);
     } catch (error) {
-      this.onError(error);
+      this.onError(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
@@ -340,7 +340,7 @@ export class RequestResponseResponderStream
           try {
             this.receiver = this.handler(payload, this);
           } catch (error) {
-            this.onError(error);
+            this.onError(error instanceof Error ? error : new Error(String(error)));
           }
           return;
         }

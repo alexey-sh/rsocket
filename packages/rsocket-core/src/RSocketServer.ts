@@ -173,17 +173,18 @@ export class RSocketServer {
               keepAliveHandler.start();
               keepAliveSender?.start();
             } catch (e) {
+              const message = e instanceof Error ? e.message : String(e);
               connection.multiplexerDemultiplexer.connectionOutbound.send({
                 type: FrameTypes.ERROR,
                 streamId: 0,
                 code: ErrorCodes.REJECTED_SETUP,
-                message: e.message ?? "",
+                message,
                 flags: Flags.NONE,
               });
               connection.close(
                 e instanceof RSocketError
                   ? e
-                  : new RSocketError(ErrorCodes.REJECTED_SETUP, e.message)
+                  : new RSocketError(ErrorCodes.REJECTED_SETUP, message)
               );
             }
             return;

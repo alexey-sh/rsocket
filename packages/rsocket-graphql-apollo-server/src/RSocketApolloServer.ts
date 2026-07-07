@@ -92,7 +92,7 @@ export class RSocketApolloServer<
       OnExtensionSubscriber
   ) {
     return {
-      next({ graphqlResponse }) {
+      next({ graphqlResponse }: { graphqlResponse: any }) {
         responderStream.onNext(
           {
             data: Buffer.from(graphqlResponse),
@@ -100,7 +100,7 @@ export class RSocketApolloServer<
           true
         );
       },
-      error(e) {
+      error(e: any) {
         responderStream.onError(e);
       },
     };
@@ -130,7 +130,7 @@ export class RSocketApolloServer<
     subscriber: OnTerminalSubscriber & OnNextSubscriber & OnExtensionSubscriber
   ) {
     return {
-      next(graphqlResponse) {
+      next(graphqlResponse: any) {
         subscriber.onNext(
           {
             data: Buffer.from(JSON.stringify(graphqlResponse)),

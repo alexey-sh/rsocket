@@ -230,14 +230,15 @@ export class ResumableClientServerInputMultiplexerDemultiplexer extends ClientSe
         try {
           this.frameStore.dropTo(frame.lastReceivedPosition);
         } catch (re) {
+          const error = re as RSocketError;
           this.outbound.send({
             type: FrameTypes.ERROR,
             streamId: 0,
             flags: Flags.NONE,
-            code: (re as RSocketError).code,
-            message: re.message,
+            code: error.code,
+            message: error.message,
           });
-          this.close(re);
+          this.close(error);
         }
       } else if (frame.type === FrameTypes.ERROR) {
         super.handle(frame);
@@ -277,20 +278,21 @@ export class ResumableClientServerInputMultiplexerDemultiplexer extends ClientSe
             code: e.code,
             message: e.message,
           });
-          this.close(e);
+          this.close(e instanceof Error ? e : new Error(String(e)));
           return;
         }
         try {
           this.frameStore.dropTo(frame.serverPosition);
         } catch (re) {
+          const error = re as RSocketError;
           this.outbound.send({
             type: FrameTypes.ERROR,
             streamId: 0,
             flags: Flags.NONE,
-            code: (re as RSocketError).code,
-            message: re.message,
+            code: error.code,
+            message: error.message,
           });
-          this.close(re);
+          this.close(error);
           return;
         }
 
@@ -307,14 +309,15 @@ export class ResumableClientServerInputMultiplexerDemultiplexer extends ClientSe
         try {
           this.frameStore.dropTo(frame.clientPosition);
         } catch (re) {
+          const error = re as RSocketError;
           this.outbound.send({
             type: FrameTypes.ERROR,
             streamId: 0,
             flags: Flags.NONE,
-            code: (re as RSocketError).code,
-            message: re.message,
+            code: error.code,
+            message: error.message,
           });
-          this.close(re);
+          this.close(error);
         }
         break;
       }
@@ -332,7 +335,7 @@ export class ResumableClientServerInputMultiplexerDemultiplexer extends ClientSe
       try {
         await this.reconnector(this, this.frameStore);
       } catch (e) {
-        this.close(e);
+        this.close(e instanceof Error ? e : new Error(String(e)));
       }
     } else {
       this.timeoutId = setTimeout(this.close.bind(this), this.sessionTimeout);

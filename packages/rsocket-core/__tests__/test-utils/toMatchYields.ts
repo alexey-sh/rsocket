@@ -1,7 +1,7 @@
 // Modified from https://github.com/doniyor2109/jest-generator
 
-const toOrdinalSuffix = (num) => {
-  const int = parseInt(num),
+const toOrdinalSuffix = (num: number) => {
+  const int = parseInt(String(num)),
     digits = [int % 10, int % 100],
     ordinals = ["st", "nd", "rd", "th"],
     oPattern = [1, 2, 3, 4],
@@ -11,7 +11,11 @@ const toOrdinalSuffix = (num) => {
     : int + ordinals[3];
 };
 
-export default function toMatchYields(iterator, yieldValues) {
+export default function toMatchYields(
+  this: jest.MatcherContext,
+  iterator: Generator,
+  yieldValues: any[]
+) {
   let yieldIndex = 0;
   let pass = true;
   let received;

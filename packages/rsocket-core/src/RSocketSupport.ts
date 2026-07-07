@@ -187,7 +187,7 @@ export class RSocketRequester implements RSocket {
     this.connection.close(error);
   }
 
-  onClose(callback): void {
+  onClose(callback: (error?: Error) => void): void {
     this.connection.onClose(callback);
   }
 }

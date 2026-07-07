@@ -97,7 +97,7 @@ export class WebsocketDuplexConnection
 
   private handleError = (error: Error): void => {
     // The Duplex "error" event emits a plain Error, not a browser ErrorEvent.
-    this.close(error);
+    this.close(error instanceof Error ? error : new Error(String(error)));
   };
 
   private handleMessage = (buffer: Buffer): void => {
@@ -113,7 +113,7 @@ export class WebsocketDuplexConnection
       // }
       this.multiplexerDemultiplexer.handle(frame);
     } catch (error) {
-      this.close(error);
+      this.close(error instanceof Error ? error : new Error(String(error)));
     }
   };
 
@@ -152,7 +152,7 @@ export class WebsocketDuplexConnection
         await connectionAcceptor(frame, connection);
         socket.resume();
       } catch (error) {
-        connection.close(error);
+        connection.close(error instanceof Error ? error : new Error(String(error)));
       }
     });
   }

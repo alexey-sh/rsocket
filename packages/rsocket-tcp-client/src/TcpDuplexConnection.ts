@@ -132,7 +132,7 @@ export class TcpDuplexConnection
       }
       this.remainingBuffer = buffer.slice(lastOffset, buffer.length);
     } catch (error) {
-      this.close(error);
+      this.close(error instanceof Error ? error : new Error(String(error)));
     }
   };
 }

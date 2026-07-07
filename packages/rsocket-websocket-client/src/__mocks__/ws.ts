@@ -7,11 +7,11 @@ export class MockSocket extends EventEmitter {
 
   close = jest.fn();
 
-  addEventListener = (name, handler) => {
+  addEventListener = (name: string, handler: (...args: any[]) => void) => {
     this.on(name, handler);
   };
 
-  removeEventListener = (name, handler) => {
+  removeEventListener = (name: string, handler: (...args: any[]) => void) => {
     this.on(name, handler);
   };
 

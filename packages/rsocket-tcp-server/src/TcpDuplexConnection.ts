@@ -97,7 +97,7 @@ export class TcpDuplexConnection
 
   private handleError = (error: Error): void => {
     this.error = error;
-    this.close(error);
+    this.close(error instanceof Error ? error : new Error(String(error)));
   };
 
   private handleData = (chunks: Buffer): void => {
@@ -112,7 +112,7 @@ export class TcpDuplexConnection
       }
       this.remainingBuffer = buffer.slice(lastOffset, buffer.length);
     } catch (error) {
-      this.close(error);
+      this.close(error instanceof Error ? error : new Error(String(error)));
     }
   };
 
@@ -171,7 +171,7 @@ export class TcpDuplexConnection
           );
         }
       } catch (error) {
-        connection.close(error);
+        connection.close(error instanceof Error ? error : new Error(String(error)));
       }
     };
     socket.once("data", readFirstFrame);

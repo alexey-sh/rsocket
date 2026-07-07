@@ -92,8 +92,10 @@ export class WebsocketDuplexConnection
     );
   };
 
-  private handleError = (e: ErrorEvent): void => {
-    this.close(e.error);
+  private handleError = (e: Event): void => {
+    // The DOM "error" event on WebSocket is a plain Event; `.error` is the
+    // browser ErrorEvent shape, so narrow to read it.
+    this.close((e as ErrorEvent).error);
   };
 
   private handleMessage = (message: MessageEvent): void => {
@@ -103,7 +105,7 @@ export class WebsocketDuplexConnection
 
       this.multiplexerDemultiplexer.handle(frame);
     } catch (error) {
-      this.close(error);
+      this.close(error instanceof Error ? error : new Error(String(error)));
     }
   };
 }
