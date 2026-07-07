@@ -77,7 +77,11 @@ export class WebsocketDuplexConnection
 
     const buffer = serializeFrame(frame);
 
-    this.websocket.send(buffer);
+    // Node's `Buffer` is typed `Uint8Array<ArrayBufferLike>`, but the DOM
+    // `WebSocket.send()` requires an `ArrayBuffer`-backed view. serializeFrame()
+    // returns a pooled Buffer backed by a real `ArrayBuffer` (never a
+    // `SharedArrayBuffer`), so narrowing the element type here is safe.
+    this.websocket.send(buffer as Uint8Array<ArrayBuffer>);
   }
 
   private handleClosed = (e: CloseEvent): void => {

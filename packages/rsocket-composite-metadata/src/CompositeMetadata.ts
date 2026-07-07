@@ -38,7 +38,7 @@ export function encodeCompositeMetadata(
     | Map<string | WellKnownMimeType | number, Buffer | (() => Buffer)>
     | Array<[string | WellKnownMimeType | number, Buffer | (() => Buffer)]>
 ): Buffer {
-  let encodedCompositeMetadata = Buffer.allocUnsafe(0);
+  let encodedCompositeMetadata: Buffer = Buffer.allocUnsafe(0);
   for (const [metadataKey, metadataValue] of metadata) {
     const metadataRealValue =
       typeof metadataValue === "function" ? metadataValue() : metadataValue;

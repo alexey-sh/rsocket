@@ -15,6 +15,6 @@ describe("KeepAliveSender", () => {
 
     jest.advanceTimersByTime(expectedFrames * keepAlivePeriod);
 
-    expect(mockOutbound.send).toBeCalledTimes(expectedFrames);
+    expect(mockOutbound.send).toHaveBeenCalledTimes(expectedFrames);
   });
 });

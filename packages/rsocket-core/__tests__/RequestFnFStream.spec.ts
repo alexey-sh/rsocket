@@ -34,7 +34,7 @@ describe("RequestFnFStream Test", () => {
             streamId: 1,
           },
         ]);
-        expect(mockHandler.onComplete).toBeCalled();
+        expect(mockHandler.onComplete).toHaveBeenCalled();
       });
     });
 
@@ -86,7 +86,7 @@ describe("RequestFnFStream Test", () => {
             streamId: 1,
           },
         ]);
-        expect(mockHandler.onComplete).toBeCalled();
+        expect(mockHandler.onComplete).toHaveBeenCalled();
       });
     });
 
@@ -106,7 +106,7 @@ describe("RequestFnFStream Test", () => {
       request.handleReady(1, mockStream);
 
       expect(mockStream.frames).toMatchObject([]);
-      expect(mockHandler.onComplete).not.toBeCalled();
+      expect(mockHandler.onComplete).not.toHaveBeenCalled();
     });
 
     it("Doesn't sends RequestFnFFrame on onReady event if request was cancelled and removed from lease manager", () => {
@@ -127,8 +127,8 @@ describe("RequestFnFStream Test", () => {
       request.handleReady(1, mockStream);
 
       expect(mockStream.frames).toMatchObject([]);
-      expect(mockHandler.onComplete).not.toBeCalled();
-      expect(mockLeasManager.cancelRequest).toBeCalled();
+      expect(mockHandler.onComplete).not.toHaveBeenCalled();
+      expect(mockLeasManager.cancelRequest).toHaveBeenCalled();
     });
 
     it("Doesn't sends onError and any other frames on onReject event", () => {
@@ -144,7 +144,7 @@ describe("RequestFnFStream Test", () => {
 
       request.handleReject(new Error("boom"));
 
-      expect(mockHandler.onError).toBeCalledWith(new Error("boom"));
+      expect(mockHandler.onError).toHaveBeenCalledWith(new Error("boom"));
     });
 
     it("Doesn't sends onError on onReject event if cancelled", () => {
@@ -161,7 +161,7 @@ describe("RequestFnFStream Test", () => {
       request.cancel();
       request.handleReject(new Error("boom"));
 
-      expect(mockHandler.onError).not.toBeCalledWith(new Error("boom"));
+      expect(mockHandler.onError).not.toHaveBeenCalledWith(new Error("boom"));
     });
   });
 
@@ -223,7 +223,7 @@ describe("RequestFnFStream Test", () => {
 
         responder.close();
 
-        expect(mockCancellable.cancel).toBeCalled();
+        expect(mockCancellable.cancel).toHaveBeenCalled();
       });
 
       it("Drop exception from handler", () => {

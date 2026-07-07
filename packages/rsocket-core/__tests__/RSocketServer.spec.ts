@@ -62,7 +62,7 @@ describe("RSocketServer", () => {
           acceptor: undefined,
         });
         await server.bind();
-        expect(mockConnection.close).toBeCalled();
+        expect(mockConnection.close).toHaveBeenCalled();
         const call0Args = mockConnection.close.mock.calls[0];
         const error: RSocketError = <RSocketError>call0Args[0];
         expect(ErrorCodes[error.code]).toEqual(

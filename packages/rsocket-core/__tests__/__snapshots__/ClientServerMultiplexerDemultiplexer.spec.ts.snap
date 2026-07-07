@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ClientServerMultiplexerDemultiplexer when receiving data when buffer contains a single frame deserializes received frames and calls the configured handler 1`] = `
 {

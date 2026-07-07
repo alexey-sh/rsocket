@@ -49,9 +49,9 @@ describe("RequestStreamStream Test", () => {
             streamId: 1,
           },
         ]);
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
 
         request.handle({
           type: FrameTypes.PAYLOAD,
@@ -60,9 +60,9 @@ describe("RequestStreamStream Test", () => {
           metadata: undefined,
           streamId: 1,
         });
-        expect(mockHandler.onComplete).toBeCalled();
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
+        expect(mockHandler.onComplete).toHaveBeenCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
         expect(mockStream.handler).toBeUndefined();
       });
 
@@ -96,9 +96,9 @@ describe("RequestStreamStream Test", () => {
         });
 
         expect(mockStream.handler).toBe(request);
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
 
         request.handle({
           type: FrameTypes.PAYLOAD,
@@ -125,15 +125,15 @@ describe("RequestStreamStream Test", () => {
           streamId: 1,
         });
 
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).toBeCalledWith(
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).toHaveBeenCalledWith(
           {
             data: Buffer.from("hey"),
             metadata: Buffer.from("there"),
           },
           false
         );
-        expect(mockHandler.onComplete).toBeCalled();
+        expect(mockHandler.onComplete).toHaveBeenCalled();
         expect(mockStream.handler).toBeUndefined();
       });
 
@@ -168,9 +168,9 @@ describe("RequestStreamStream Test", () => {
         ]);
 
         expect(mockStream.handler).toBe(request);
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
 
         request.handle({
           type: FrameTypes.ERROR,
@@ -180,11 +180,11 @@ describe("RequestStreamStream Test", () => {
           message: "Boom",
         });
 
-        expect(mockHandler.onError).toBeCalledWith(
+        expect(mockHandler.onError).toHaveBeenCalledWith(
           new RSocketError(ErrorCodes.APPLICATION_ERROR, "Boom")
         );
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
         expect(mockStream.handler).toBeUndefined();
       });
 
@@ -218,9 +218,9 @@ describe("RequestStreamStream Test", () => {
         ]);
 
         expect(mockStream.handler).toBe(request);
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
 
         request.handle({
           type: FrameTypes.REQUEST_N,
@@ -229,14 +229,14 @@ describe("RequestStreamStream Test", () => {
           requestN: 1,
         } as any);
 
-        expect(mockHandler.onError).toBeCalledWith(
+        expect(mockHandler.onError).toHaveBeenCalledWith(
           new RSocketError(
             ErrorCodes.CANCELED,
             `Unexpected frame type [${FrameTypes.REQUEST_N}]`
           )
         );
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
         expect(mockStream.handler).toBeUndefined();
       });
 
@@ -269,9 +269,9 @@ describe("RequestStreamStream Test", () => {
         });
 
         expect(mockStream.handler).toBe(request);
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
 
         request.cancel();
 
@@ -281,9 +281,9 @@ describe("RequestStreamStream Test", () => {
           streamId: 1,
         });
 
-        expect(mockHandler.onError).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onComplete).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
         expect(mockStream.handler).toBeUndefined();
       });
     });
@@ -344,9 +344,9 @@ describe("RequestStreamStream Test", () => {
         ]);
 
         expect(mockStream.handler).toBe(request);
-        expect(mockHandler.onComplete).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onError).not.toBeCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
 
         request.handle({
           type: FrameTypes.PAYLOAD,
@@ -386,8 +386,8 @@ describe("RequestStreamStream Test", () => {
         });
 
         expect(mockStream.handler).toBeUndefined();
-        expect(mockHandler.onComplete).toBeCalled();
-        expect(mockHandler.onNext).toBeCalled();
+        expect(mockHandler.onComplete).toHaveBeenCalled();
+        expect(mockHandler.onNext).toHaveBeenCalled();
         expect(
           (mockHandler.onNext as jest.Mock).mock.calls[0][0]
         ).toMatchObject({
@@ -397,7 +397,7 @@ describe("RequestStreamStream Test", () => {
           ]), // 22 bytes
           metadata: Buffer.from("world hello"),
         });
-        expect(mockHandler.onError).not.toBeCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
       });
 
       it("Sends RequestStreamFrame on onReady event and fail on unexpected frame", () => {
@@ -454,9 +454,9 @@ describe("RequestStreamStream Test", () => {
         ]);
 
         expect(mockStream.handler).toBe(request);
-        expect(mockHandler.onComplete).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
-        expect(mockHandler.onError).not.toBeCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
+        expect(mockHandler.onError).not.toHaveBeenCalled();
 
         request.handle({
           type: FrameTypes.PAYLOAD,
@@ -487,8 +487,8 @@ describe("RequestStreamStream Test", () => {
         } as any);
 
         expect(mockStream.handler).toBeUndefined();
-        expect(mockHandler.onComplete).not.toBeCalled();
-        expect(mockHandler.onNext).not.toBeCalled();
+        expect(mockHandler.onComplete).not.toHaveBeenCalled();
+        expect(mockHandler.onNext).not.toHaveBeenCalled();
         expect(mockHandler.onError).toHaveBeenCalledWith(
           new RSocketError(
             ErrorCodes.APPLICATION_ERROR,
@@ -520,9 +520,9 @@ describe("RequestStreamStream Test", () => {
 
       expect(mockStream.handler).not.toBe(request);
       expect(mockStream.frames).toMatchObject([]);
-      expect(mockHandler.onError).not.toBeCalled();
-      expect(mockHandler.onNext).not.toBeCalled();
-      expect(mockHandler.onComplete).not.toBeCalled();
+      expect(mockHandler.onError).not.toHaveBeenCalled();
+      expect(mockHandler.onNext).not.toHaveBeenCalled();
+      expect(mockHandler.onComplete).not.toHaveBeenCalled();
     });
 
     it("Doesn't sends RequestStreamFrame on onReady event if request was cancelled and removed from lease manager", () => {
@@ -548,10 +548,10 @@ describe("RequestStreamStream Test", () => {
       request.handleReady(1, mockStream);
 
       expect(mockStream.frames).toMatchObject([]);
-      expect(mockHandler.onComplete).not.toBeCalled();
-      expect(mockHandler.onNext).not.toBeCalled();
-      expect(mockHandler.onError).not.toBeCalled();
-      expect(mockLeasManager.cancelRequest).toBeCalled();
+      expect(mockHandler.onComplete).not.toHaveBeenCalled();
+      expect(mockHandler.onNext).not.toHaveBeenCalled();
+      expect(mockHandler.onError).not.toHaveBeenCalled();
+      expect(mockLeasManager.cancelRequest).toHaveBeenCalled();
     });
 
     it("Doesn't sends onError and any other frames on onReject event", () => {
@@ -572,7 +572,7 @@ describe("RequestStreamStream Test", () => {
 
       request.handleReject(new Error("boom"));
 
-      expect(mockHandler.onError).toBeCalledWith(new Error("boom"));
+      expect(mockHandler.onError).toHaveBeenCalledWith(new Error("boom"));
     });
 
     it("Doesn't sends onError on onReject event if cancelled", () => {
@@ -594,9 +594,9 @@ describe("RequestStreamStream Test", () => {
       request.cancel();
       request.handleReject(new Error("boom"));
 
-      expect(mockHandler.onError).not.toBeCalledWith(new Error("boom"));
-      expect(mockHandler.onNext).not.toBeCalled();
-      expect(mockHandler.onComplete).not.toBeCalled();
+      expect(mockHandler.onError).not.toHaveBeenCalledWith(new Error("boom"));
+      expect(mockHandler.onNext).not.toHaveBeenCalled();
+      expect(mockHandler.onComplete).not.toHaveBeenCalled();
     });
   });
 
@@ -644,7 +644,7 @@ describe("RequestStreamStream Test", () => {
         sink.onComplete();
         sink.onComplete(); // sends on complete which has to be ignored
 
-        expect(mockHandler.request).toBeCalledWith(25);
+        expect(mockHandler.request).toHaveBeenCalledWith(25);
         expect(mockStream.frames).toMatchObject([
           {
             type: FrameTypes.PAYLOAD,
@@ -836,7 +836,7 @@ describe("RequestStreamStream Test", () => {
 
         expect(requested).toBe(1);
         expect(mockStream.handler).toBeUndefined();
-        expect(mockHandler.cancel).toBeCalled();
+        expect(mockHandler.cancel).toHaveBeenCalled();
       });
 
       it("Send error back on exception in handler", () => {

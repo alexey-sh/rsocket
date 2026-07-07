@@ -87,7 +87,7 @@ describe("ClientServerMultiplexerDemultiplexer", function () {
         multiplexerDemultiplexer.handle(setupFrame);
 
         // assert
-        expect(handler.handle).toBeCalledTimes(1);
+        expect(handler.handle).toHaveBeenCalledTimes(1);
 
         const [call0] = handler.handle.mock.calls;
         const [arg0] = call0;
@@ -129,7 +129,7 @@ describe("ClientServerMultiplexerDemultiplexer", function () {
         });
 
         // assert
-        expect(mockHandle).toBeCalledTimes(2);
+        expect(mockHandle).toHaveBeenCalledTimes(2);
 
         const [call0, call1] = mockHandle.mock.calls;
 

@@ -25,7 +25,7 @@ describe("KeepAliveHandler", () => {
 
     jest.advanceTimersByTime(keepAliveTimeoutDuration + 1000);
 
-    expect(mockConnection.close).toBeCalledTimes(1);
+    expect(mockConnection.close).toHaveBeenCalledTimes(1);
   });
 
   it("Handling KeepAlive frame extends timeout duration", () => {
@@ -59,6 +59,6 @@ describe("KeepAliveHandler", () => {
 
     jest.advanceTimersByTime(9000);
 
-    expect(mockConnection.close).toBeCalledTimes(0);
+    expect(mockConnection.close).toHaveBeenCalledTimes(0);
   });
 });

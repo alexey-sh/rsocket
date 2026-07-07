@@ -25,10 +25,10 @@ import {
   Outbound,
   ServerTransport,
 } from "rsocket-core";
-import WebSocket, { Server } from "ws";
+import WebSocket from "ws";
 import { WebsocketDuplexConnection } from "./WebsocketDuplexConnection";
 
-export type SocketFactory = (options: SocketOptions) => Server;
+export type SocketFactory = (options: SocketOptions) => WebSocket.Server;
 
 export type SocketOptions = {
   host?: string;
@@ -41,7 +41,7 @@ export type ServerOptions = SocketOptions & {
 };
 
 const defaultFactory: SocketFactory = (options: SocketOptions) => {
-  return new Server({
+  return new WebSocket.Server({
     host: options.host,
     port: options.port,
   });
@@ -68,7 +68,7 @@ export class WebsocketServerTransport implements ServerTransport {
       outbound: Outbound & Closeable
     ) => Multiplexer & Demultiplexer & FrameHandler
   ): Promise<Closeable> {
-    const websocketServer: Server = await this.connectServer();
+    const websocketServer: WebSocket.Server = await this.connectServer();
     const serverCloseable = new ServerCloseable(websocketServer);
 
     const connectionListener = (websocket: WebSocket) => {
@@ -92,7 +92,7 @@ export class WebsocketServerTransport implements ServerTransport {
     return serverCloseable;
   }
 
-  private connectServer(): Promise<Server> {
+  private connectServer(): Promise<WebSocket.Server> {
     return new Promise((resolve, reject) => {
       const websocketServer = this.factory({
         host: this.host,
@@ -111,7 +111,7 @@ export class WebsocketServerTransport implements ServerTransport {
 }
 
 class ServerCloseable extends Deferred {
-  constructor(private readonly server: Server) {
+  constructor(private readonly server: WebSocket.Server) {
     super();
   }
 

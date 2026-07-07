@@ -36,13 +36,13 @@ describe("RSocketRequester.metadataPush", () => {
 
     requester.metadataPush(metadata, responderStream);
 
-    expect(mockOutbound.send).toBeCalledWith({
+    expect(mockOutbound.send).toHaveBeenCalledWith({
       type: FrameTypes.METADATA_PUSH,
       streamId: 0,
       flags: Flags.METADATA,
       metadata,
     });
-    expect(responderStream.onComplete).toBeCalledTimes(1);
+    expect(responderStream.onComplete).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -68,7 +68,7 @@ describe("DefaultConnectionFrameHandler METADATA_PUSH", () => {
       metadata,
     } as any);
 
-    expect(responder.metadataPush).toBeCalledTimes(1);
+    expect(responder.metadataPush).toHaveBeenCalledTimes(1);
     expect(responder.metadataPush.mock.calls[0][0]).toEqual(metadata);
   });
 });
@@ -88,8 +88,8 @@ describe("LeaseHandler.close", () => {
 
     leaseHandler.close();
 
-    expect(h1.handleReject).toBeCalledTimes(1);
-    expect(h2.handleReject).toBeCalledTimes(1);
+    expect(h1.handleReject).toHaveBeenCalledTimes(1);
+    expect(h2.handleReject).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -119,7 +119,7 @@ describe("DefaultConnectionFrameHandler lenient processing", () => {
       metadata: undefined,
     } as any);
 
-    expect(mockOutbound.send).not.toBeCalled();
-    expect(mockConnection.close).not.toBeCalled();
+    expect(mockOutbound.send).not.toHaveBeenCalled();
+    expect(mockConnection.close).not.toHaveBeenCalled();
   });
 });

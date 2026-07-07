@@ -31,7 +31,7 @@ describe("WebsocketDuplexConnection close/error handling", () => {
     connection.onClose(onClose);
 
     expect(() => duplex.emit("close")).not.toThrow();
-    expect(onClose).toBeCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
     expect(onClose.mock.calls[0][0]).toBeInstanceOf(Error);
   });
 
@@ -50,7 +50,7 @@ describe("WebsocketDuplexConnection close/error handling", () => {
     const error = new Error("boom");
     duplex.emit("error", error);
 
-    expect(onClose).toBeCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
     expect(onClose.mock.calls[0][0]).toBe(error);
   });
 });
@@ -78,7 +78,7 @@ describe("WebsocketDuplexConnection.send", () => {
         streamId: 1,
       } as any)
     ).not.toThrow();
-    expect(onClose).toBeCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
     expect(onClose.mock.calls[0][0]).toBeInstanceOf(Error);
   });
 });
@@ -98,6 +98,6 @@ describe("WebsocketDuplexConnection.create", () => {
 
     expect(() => socket.emit("data", Buffer.from([0x00, 0x01]))).not.toThrow();
     expect(factory).not.toHaveBeenCalled();
-    expect(socket.end).toBeCalled();
+    expect(socket.end).toHaveBeenCalled();
   });
 });

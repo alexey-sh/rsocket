@@ -2,6 +2,10 @@
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
     "baseUrl": ".",
+    // ts-jest resolves this config for tests (builds use tsconfig.build.json).
+    // noEmitOnError:false lets ts-jest report type errors per file instead of
+    // skipping emit for the whole program when any single test file errors.
+    "noEmitOnError": false,
     "paths": {
       "rsocket-*": [
         "packages/rsocket-*/src"

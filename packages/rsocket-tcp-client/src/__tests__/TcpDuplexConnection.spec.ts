@@ -86,8 +86,8 @@ describe("TcpDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       connection.close();
 
-      expect(onCloseCallback).toBeCalledTimes(1);
-      expect(onCloseCallback).toBeCalledWith();
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledWith();
     });
 
     it("calls onClose when closed with an error", async () => {
@@ -106,8 +106,8 @@ describe("TcpDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       connection.close(error);
 
-      expect(onCloseCallback).toBeCalledTimes(1);
-      expect(onCloseCallback).toBeCalledWith(error);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledWith(error);
     });
 
     it("subsequent calls to close do not invoke onClose", async () => {
@@ -126,8 +126,8 @@ describe("TcpDuplexConnection", function () {
       connection.close(error);
       connection.close(error);
 
-      expect(onCloseCallback).toBeCalledTimes(1);
-      expect(onCloseCallback).toBeCalledWith(error);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledWith(error);
     });
 
     it("the onClose callback is called with an error when the socket is closed unexpectedly", async () => {
@@ -145,7 +145,7 @@ describe("TcpDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       socket.emit("close");
 
-      expect(onCloseCallback).toBeCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
       expect(onCloseCallback).toHaveBeenCalledWith(
         new Error("TcpDuplexConnection: Socket closed unexpectedly.")
       );
@@ -169,7 +169,7 @@ describe("TcpDuplexConnection", function () {
       socket.emit("error", error);
       socket.emit("close", true);
 
-      expect(onCloseCallback).toBeCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
       expect(onCloseCallback).toHaveBeenCalledWith(expectedError);
     });
   });
@@ -206,7 +206,7 @@ describe("TcpDuplexConnection", function () {
       connection.send(setupFrame);
 
       // assert
-      expect(socketStub.write).toBeCalledWith(expect.any(Buffer));
+      expect(socketStub.write).toHaveBeenCalledWith(expect.any(Buffer));
     });
 
     it("does not write the given frame to the underlying socket when close was previously called", async () => {
@@ -226,7 +226,7 @@ describe("TcpDuplexConnection", function () {
       connection.send(setupFrame);
 
       // assert
-      expect(socketStub.write).toBeCalledTimes(0);
+      expect(socketStub.write).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -261,7 +261,7 @@ describe("TcpDuplexConnection", function () {
         socketStub.emit("data", serializeFrameWithLength(setupFrame));
 
         // assert
-        expect(handler.handle).toBeCalledTimes(1);
+        expect(handler.handle).toHaveBeenCalledTimes(1);
 
         const [call0] = handler.handle.mock.calls;
         const [arg0] = call0;
@@ -304,7 +304,7 @@ describe("TcpDuplexConnection", function () {
         );
 
         // assert
-        expect(multiplexerDemultiplexer.handle).toBeCalledTimes(2);
+        expect(multiplexerDemultiplexer.handle).toHaveBeenCalledTimes(2);
 
         const [call0, call1] = multiplexerDemultiplexer.handle.mock.calls;
 
@@ -337,8 +337,8 @@ describe("TcpDuplexConnection", function () {
         socketStub.mock.data(data);
 
         // assert
-        expect(onCloseCallback).toBeCalledTimes(1);
-        expect(onCloseCallback).toBeCalledWith(expect.any(Error));
+        expect(onCloseCallback).toHaveBeenCalledTimes(1);
+        expect(onCloseCallback).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });

@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.json",
 
   "compilerOptions": {
-    "downlevelIteration": true,
     "sourceMap": true,
     "target": "ESNext"
   }

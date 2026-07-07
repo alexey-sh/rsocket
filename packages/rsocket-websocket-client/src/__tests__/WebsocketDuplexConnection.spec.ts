@@ -30,15 +30,15 @@ describe("WebsocketDuplexConnection", function () {
 
       connection.close();
 
-      expect(socketStub.removeEventListener).toBeCalledWith(
+      expect(socketStub.removeEventListener).toHaveBeenCalledWith(
         "close",
         expect.any(Function)
       );
-      expect(socketStub.removeEventListener).toBeCalledWith(
+      expect(socketStub.removeEventListener).toHaveBeenCalledWith(
         "error",
         expect.any(Function)
       );
-      expect(socketStub.removeEventListener).toBeCalledWith(
+      expect(socketStub.removeEventListener).toHaveBeenCalledWith(
         "message",
         expect.any(Function)
       );
@@ -58,7 +58,7 @@ describe("WebsocketDuplexConnection", function () {
 
       connection.close();
 
-      expect(socketStub.close).toBeCalledWith();
+      expect(socketStub.close).toHaveBeenCalledWith();
     });
 
     it("cleans up the socket resource when closed with an error", () => {
@@ -76,7 +76,7 @@ describe("WebsocketDuplexConnection", function () {
       const error = new Error();
       connection.close(error);
 
-      expect(socketStub.close).toBeCalledWith();
+      expect(socketStub.close).toHaveBeenCalledWith();
     });
 
     it("calls onClose", () => {
@@ -94,8 +94,8 @@ describe("WebsocketDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       connection.close();
 
-      expect(onCloseCallback).toBeCalledTimes(1);
-      expect(onCloseCallback).toBeCalledWith();
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledWith();
     });
 
     it("calls onClose when closed with an error", () => {
@@ -114,8 +114,8 @@ describe("WebsocketDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       connection.close(error);
 
-      expect(onCloseCallback).toBeCalledTimes(1);
-      expect(onCloseCallback).toBeCalledWith(error);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledWith(error);
     });
 
     it("subsequent calls to close result in only a single invocation of onClose", () => {
@@ -134,8 +134,8 @@ describe("WebsocketDuplexConnection", function () {
       connection.close(error);
       connection.close(error);
 
-      expect(onCloseCallback).toBeCalledTimes(1);
-      expect(onCloseCallback).toBeCalledWith(error);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledWith(error);
     });
 
     it("the onClose callback is called with an error when the socket is closed unexpectedly", () => {
@@ -153,7 +153,7 @@ describe("WebsocketDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       (socket as unknown as MockSocket).mock.close({});
 
-      expect(onCloseCallback).toBeCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
       expect(onCloseCallback).toHaveBeenCalledWith(
         new Error("WebsocketDuplexConnection: Socket closed unexpectedly.")
       );
@@ -177,7 +177,7 @@ describe("WebsocketDuplexConnection", function () {
       connection.onClose(onCloseCallback);
       (socket as unknown as MockSocket).mock.error({ error: expectedError });
 
-      expect(onCloseCallback).toBeCalledTimes(1);
+      expect(onCloseCallback).toHaveBeenCalledTimes(1);
       expect(onCloseCallback).toHaveBeenCalledWith(expectedError);
     });
   });
@@ -214,7 +214,7 @@ describe("WebsocketDuplexConnection", function () {
       connection.send(setupFrame);
 
       // assert
-      expect(socketStub.send).toBeCalledWith(expect.any(Buffer));
+      expect(socketStub.send).toHaveBeenCalledWith(expect.any(Buffer));
     });
 
     it("does not write the given frame to the underlying socket when close was previously called", () => {
@@ -234,7 +234,7 @@ describe("WebsocketDuplexConnection", function () {
       connection.send(setupFrame);
 
       // assert
-      expect(socketStub.send).toBeCalledTimes(0);
+      expect(socketStub.send).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -273,7 +273,7 @@ describe("WebsocketDuplexConnection", function () {
         });
 
         // assert
-        expect(multiplexerDemultiplexer.handle).toBeCalledTimes(1);
+        expect(multiplexerDemultiplexer.handle).toHaveBeenCalledTimes(1);
 
         const [call0] = multiplexerDemultiplexer.handle.mock.calls;
         const [arg0] = call0;
@@ -305,8 +305,8 @@ describe("WebsocketDuplexConnection", function () {
         (socketStub as unknown as MockSocket).mock.message({ data });
 
         // assert
-        expect(onCloseCallback).toBeCalledTimes(1);
-        expect(onCloseCallback).toBeCalledWith(expect.any(Error));
+        expect(onCloseCallback).toHaveBeenCalledTimes(1);
+        expect(onCloseCallback).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });
