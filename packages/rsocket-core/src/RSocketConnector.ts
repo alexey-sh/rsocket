@@ -160,6 +160,7 @@ export class RSocketConnector {
     connection.onClose((e) => {
       keepAliveSender.close();
       keepAliveHandler.close();
+      leaseHandler?.close(e);
       connectionFrameHandler.close(e);
     });
     connection.multiplexerDemultiplexer.connectionInbound(

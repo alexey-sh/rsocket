@@ -241,6 +241,15 @@ export class LeaseHandler implements LeaseManager {
       this.pendingRequests.splice(index, 1);
     }
   }
+
+  close(error?: Error): void {
+    const rejection =
+      error ?? new RSocketError(ErrorCodes.CANCELED, "Connection closed");
+    while (this.pendingRequests.length > 0) {
+      const handler = this.pendingRequests.shift();
+      handler.handleReject(rejection);
+    }
+  }
 }
 
 export class DefaultStreamRequestHandler implements StreamRequestHandler {
