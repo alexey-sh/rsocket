@@ -94,16 +94,17 @@ export class WebsocketDuplexConnection
     this.websocketDuplex.write(buffer);
   }
 
-  private handleClosed = (e: CloseEvent): void => {
+  private handleClosed = (): void => {
+    // The underlying `ws` Duplex emits "close" with no argument (unlike a
+    // browser CloseEvent), so there is no reason string to read here.
     this.close(
-      new Error(
-        e.reason || "WebsocketDuplexConnection: Socket closed unexpectedly."
-      )
+      new Error("WebsocketDuplexConnection: Socket closed unexpectedly.")
     );
   };
 
-  private handleError = (e: ErrorEvent): void => {
-    this.close(e.error);
+  private handleError = (error: Error): void => {
+    // The Duplex "error" event emits a plain Error, not a browser ErrorEvent.
+    this.close(error);
   };
 
   private handleMessage = (buffer: Buffer): void => {
