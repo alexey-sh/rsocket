@@ -217,7 +217,8 @@ export class ResumableClientServerInputMultiplexerDemultiplexer extends ClientSe
         super.close(new RSocketError(frame.code, frame.message));
         return;
       }
-    } else {
+    } else if (frame.type !== FrameTypes.EXT) {
+      // EXT frames are not position-tracked for resumption (RSocket spec).
       this.frameStore.store(frame);
     }
     this.outbound.send(frame);
@@ -246,7 +247,8 @@ export class ResumableClientServerInputMultiplexerDemultiplexer extends ClientSe
         super.close(new RSocketError(frame.code, frame.message));
         return;
       }
-    } else {
+    } else if (frame.type !== FrameTypes.EXT) {
+      // EXT frames are not position-tracked for resumption (RSocket spec).
       this.frameStore.record(frame);
     }
 

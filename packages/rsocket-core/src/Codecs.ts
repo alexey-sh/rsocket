@@ -19,6 +19,7 @@
 import {
   CancelFrame,
   ErrorFrame,
+  ExtFrame,
   Flags,
   Frame,
   FrameTypes,
@@ -207,6 +208,8 @@ export function deserializeFrame(buffer: Buffer): Frame {
       return deserializeCancelFrame(buffer, streamId, flags);
     case FrameTypes.LEASE:
       return deserializeLeaseFrame(buffer, streamId, flags);
+    case FrameTypes.EXT:
+      return deserializeExtFrame(buffer, streamId, flags);
     default:
     // invariant(
     //   false,
@@ -247,6 +250,8 @@ export function serializeFrame(frame: Frame): Buffer {
       return serializeCancelFrame(frame);
     case FrameTypes.LEASE:
       return serializeLeaseFrame(frame);
+    case FrameTypes.EXT:
+      return serializeExtFrame(frame);
     default:
     // invariant(
     //   false,
@@ -287,6 +292,8 @@ export function sizeOfFrame(frame: Frame): number {
       return sizeOfCancelFrame(frame);
     case FrameTypes.LEASE:
       return sizeOfLeaseFrame(frame);
+    case FrameTypes.EXT:
+      return sizeOfExtFrame(frame);
     default:
     // invariant(
     //   false,
@@ -294,6 +301,58 @@ export function sizeOfFrame(frame: Frame): number {
     //   getFrameTypeName(frame.type)
     // );
   }
+}
+
+/**
+ * Writes an EXT (extension) frame into a new buffer and returns it.
+ *
+ * Prefix size is:
+ * - extended type (uint32 = 4)
+ */
+const EXT_FIXED_SIZE = 4;
+
+function serializeExtFrame(frame: ExtFrame): Buffer {
+  const contentLength = frame.extendedContent
+    ? frame.extendedContent.byteLength
+    : 0;
+  const buffer = Buffer.allocUnsafe(
+    FRAME_HEADER_SIZE + EXT_FIXED_SIZE + contentLength
+  );
+  let offset = writeHeader(frame, buffer);
+  offset = buffer.writeInt32BE(frame.extendedType, offset);
+  if (frame.extendedContent) {
+    frame.extendedContent.copy(buffer, offset);
+  }
+  return buffer;
+}
+
+function sizeOfExtFrame(frame: ExtFrame): number {
+  const contentLength = frame.extendedContent
+    ? frame.extendedContent.byteLength
+    : 0;
+  return FRAME_HEADER_SIZE + EXT_FIXED_SIZE + contentLength;
+}
+
+/**
+ * Reads an EXT frame from the buffer and returns it.
+ */
+function deserializeExtFrame(
+  buffer: Buffer,
+  streamId: number,
+  flags: number
+): ExtFrame {
+  let offset = FRAME_HEADER_SIZE;
+  const extendedType = buffer.readInt32BE(offset);
+  offset += 4;
+  const extendedContent =
+    offset < buffer.length ? buffer.slice(offset, buffer.length) : undefined;
+  return {
+    type: FrameTypes.EXT,
+    flags,
+    streamId,
+    extendedType,
+    extendedContent,
+  };
 }
 
 /**

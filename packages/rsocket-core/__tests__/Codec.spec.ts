@@ -82,4 +82,40 @@ describe("Codecs", () => {
       expect(result.metadata).toEqual(metadata);
     });
   });
+
+  describe("EXT", () => {
+    it("round-trips extendedType and extendedContent", () => {
+      // Regression: EXT (0x3F) had no serialize/deserialize/sizeOf case, so
+      // emitting an extension frame (onExtension) produced `undefined` and
+      // crashed, and inbound EXT frames were dropped.
+      const extendedContent = Buffer.from("extension payload");
+      const buffer = serializeFrame({
+        type: FrameTypes.EXT,
+        streamId: 3,
+        flags: Flags.NONE,
+        extendedType: 0x7fffffff,
+        extendedContent,
+      } as any);
+
+      const result: any = deserializeFrame(buffer);
+      expect(result.type).toBe(FrameTypes.EXT);
+      expect(result.streamId).toBe(3);
+      expect(result.extendedType).toBe(0x7fffffff);
+      expect(result.extendedContent).toEqual(extendedContent);
+    });
+
+    it("round-trips with no extendedContent", () => {
+      const buffer = serializeFrame({
+        type: FrameTypes.EXT,
+        streamId: 1,
+        flags: Flags.NONE,
+        extendedType: 42,
+      } as any);
+
+      const result: any = deserializeFrame(buffer);
+      expect(result.type).toBe(FrameTypes.EXT);
+      expect(result.extendedType).toBe(42);
+      expect(result.extendedContent).toBeUndefined();
+    });
+  });
 });
