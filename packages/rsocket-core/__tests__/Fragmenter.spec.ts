@@ -37,6 +37,16 @@ describe("isFragmentable", () => {
     const expected = true;
     expect(actual).toBe(expected);
   });
+
+  it("handles null data without throwing (metadata-only payload)", () => {
+    // Regression: isFragmentable read payload.data.byteLength unconditionally
+    // and threw a TypeError on valid metadata-only (null data) payloads.
+    const payload = { data: null, metadata: Buffer.allocUnsafe(100) };
+    expect(() =>
+      isFragmentable(payload, 10, FrameTypes.REQUEST_FNF)
+    ).not.toThrow();
+    expect(isFragmentable(payload, 10, FrameTypes.REQUEST_FNF)).toBe(true);
+  });
 });
 
 describe("fragment", () => {

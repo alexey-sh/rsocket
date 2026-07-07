@@ -102,8 +102,8 @@ export class RSocketConnector {
                   flags: Flags.NONE,
                   clientPosition: frameStore.firstAvailableFramePosition,
                   serverPosition: frameStore.lastReceivedFramePosition,
-                  majorVersion: setupFrame.minorVersion,
-                  minorVersion: setupFrame.majorVersion,
+                  majorVersion: setupFrame.majorVersion,
+                  minorVersion: setupFrame.minorVersion,
                   resumeToken: setupFrame.resumeToken,
                 });
                 return new ResumeOkAwaitingResumableClientServerInputMultiplexerDemultiplexer(

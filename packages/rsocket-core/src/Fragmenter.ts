@@ -40,7 +40,7 @@ export function isFragmentable(
     return false;
   }
   return (
-    payload.data.byteLength +
+    (payload.data?.byteLength ?? 0) +
       (payload.metadata ? payload.metadata.byteLength + Lengths.METADATA : 0) +
       (frameType == FrameTypes.REQUEST_STREAM ||
       frameType == FrameTypes.REQUEST_CHANNEL

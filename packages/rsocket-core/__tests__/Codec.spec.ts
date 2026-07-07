@@ -4,6 +4,7 @@ import {
   writeUInt24BE,
   writeUInt64BE,
 } from "../src/Codecs";
+import { deserializeFrame, Flags, FrameTypes, serializeFrame } from "../src";
 
 describe("Codecs", () => {
   describe("{read,write}UInt24BE", () => {
@@ -56,6 +57,29 @@ describe("Codecs", () => {
       buffer.fill(0);
       writeUInt64BE(buffer, Number.MAX_SAFE_INTEGER, 0);
       expect(buffer.toString("hex")).toBe("001fffffffffffff");
+    });
+  });
+
+  describe("METADATA_PUSH", () => {
+    it("round-trips without throwing and preserves metadata", () => {
+      // Regression: deserializeMetadataPushFrame referenced an undeclared
+      // `length` (its declaration was commented out) and threw a
+      // ReferenceError on every inbound METADATA_PUSH frame.
+      const metadata = Buffer.from("hello metadata");
+      const buffer = serializeFrame({
+        type: FrameTypes.METADATA_PUSH,
+        streamId: 0,
+        flags: Flags.METADATA,
+        metadata,
+      } as any);
+
+      let result: any;
+      expect(() => {
+        result = deserializeFrame(buffer);
+      }).not.toThrow();
+
+      expect(result.type).toBe(FrameTypes.METADATA_PUSH);
+      expect(result.metadata).toEqual(metadata);
     });
   });
 });

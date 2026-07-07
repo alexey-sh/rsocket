@@ -754,10 +754,9 @@ function deserializeMetadataPushFrame(
   //   streamId === 0,
   //   "RSocketBinaryFraming: Invalid METADATA_PUSH frame, expected stream id to be 0."
   // );
-  // const length = buffer.length;
+  const length = buffer.length;
   return {
     flags,
-    // length,
     metadata:
       length === FRAME_HEADER_SIZE
         ? null
