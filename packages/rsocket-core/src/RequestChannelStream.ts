@@ -585,6 +585,7 @@ export class RequestChannelResponderStream
               this
             );
             if (this.outboundDone && this.defferedError) {
+              this.receiver.onError(this.defferedError);
             }
           } catch (error) {
             if (this.outboundDone && !this.inboundDone) {
