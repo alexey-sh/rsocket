@@ -128,8 +128,31 @@ export class TcpDuplexConnection
     ) => Multiplexer & Demultiplexer & FrameHandler
   ): void {
     // TODO: timeout on no data?
-    socket.once("data", async (buffer) => {
-      const [frame, offset] = deserializeFrames(buffer).next().value;
+    // The first frame (SETUP/RESUME) may be split across multiple TCP packets,
+    // and a packet can even be shorter than the 3-byte length prefix. Buffer
+    // incoming data until a full frame is available instead of assuming the
+    // first `data` event contains a complete frame (which threw a TypeError,
+    // surfacing as an unhandled rejection, on short or split first packets).
+    let bufferedData = Buffer.allocUnsafe(0);
+    const readFirstFrame = async (chunk: Buffer): Promise<void> => {
+      bufferedData = Buffer.concat([bufferedData, chunk]);
+
+      let first: IteratorResult<[Frame, number]>;
+      try {
+        first = deserializeFrames(bufferedData).next();
+      } catch (error) {
+        // A complete but malformed first frame — drop the connection.
+        socket.destroy(error instanceof Error ? error : new Error(`${error}`));
+        return;
+      }
+
+      if (first.done) {
+        // Not enough bytes for a complete frame yet; wait for more data.
+        socket.once("data", readFirstFrame);
+        return;
+      }
+
+      const [frame, offset] = first.value;
       const connection = new TcpDuplexConnection(
         socket,
         frame,
@@ -142,12 +165,15 @@ export class TcpDuplexConnection
         socket.pause();
         await connectionAcceptor(frame, connection);
         socket.resume();
-        if (offset < buffer.length) {
-          connection.handleData(buffer.slice(offset, buffer.length));
+        if (offset < bufferedData.length) {
+          connection.handleData(
+            bufferedData.slice(offset, bufferedData.length)
+          );
         }
       } catch (error) {
         connection.close(error);
       }
-    });
+    };
+    socket.once("data", readFirstFrame);
   }
 }
