@@ -124,7 +124,7 @@ export class RequestChannelRequesterStream
         metadata: this.payload.metadata,
         requestN: this.initialRequestN,
         flags:
-          (this.payload.metadata !== undefined ? Flags.METADATA : Flags.NONE) |
+          (this.payload.metadata ? Flags.METADATA : Flags.NONE) |
           (isCompleted ? Flags.COMPLETE : Flags.NONE),
         streamId,
       });

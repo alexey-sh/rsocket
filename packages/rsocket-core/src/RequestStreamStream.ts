@@ -107,7 +107,7 @@ export class RequestStreamRequesterStream
         data: this.payload.data,
         metadata: this.payload.metadata,
         requestN: this.initialRequestN,
-        flags: this.payload.metadata !== undefined ? Flags.METADATA : 0,
+        flags: this.payload.metadata ? Flags.METADATA : 0,
         streamId,
       });
     }
