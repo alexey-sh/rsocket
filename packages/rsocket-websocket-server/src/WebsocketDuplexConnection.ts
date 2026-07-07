@@ -77,21 +77,14 @@ export class WebsocketDuplexConnection
       return;
     }
 
-    //   if (__DEV__) {
-    //     if (this._options.debug) {
-    //       console.log(printFrame(frame));
-    //     }
-    //   }
-    const buffer =
-      /* this._options.lengthPrefixedFrames
-          ? serializeFrameWithLength(frame, this._encoders)
-          :*/ serializeFrame(frame);
-    // if (!this._socket) {
-    //   throw new Error(
-    //     "RSocketWebSocketClient: Cannot send frame, not connected."
-    //   );
-    // }
-    this.websocketDuplex.write(buffer);
+    try {
+      const buffer = serializeFrame(frame);
+      this.websocketDuplex.write(buffer);
+    } catch (error) {
+      // Writing to a closing/closed ws Duplex throws; surface it as a
+      // connection close rather than an unhandled exception.
+      this.close(error instanceof Error ? error : new Error(`${error}`));
+    }
   }
 
   private handleClosed = (): void => {
@@ -137,7 +130,15 @@ export class WebsocketDuplexConnection
   ): void {
     // TODO: timeout on no data?
     socket.once("data", async (buffer) => {
-      const frame = deserializeFrame(buffer);
+      let frame: Frame;
+      try {
+        frame = deserializeFrame(buffer);
+      } catch (error) {
+        // Malformed first frame — drop the connection instead of throwing an
+        // unhandled rejection inside this async handler.
+        socket.end();
+        return;
+      }
       const connection = new WebsocketDuplexConnection(
         socket,
         frame,
