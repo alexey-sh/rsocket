@@ -174,7 +174,13 @@ export class RSocketRequester implements RSocket {
   }
 
   metadataPush(metadata: Buffer, responderStream: OnTerminalSubscriber): void {
-    throw new Error("Method not implemented.");
+    this.connection.multiplexerDemultiplexer.connectionOutbound.send({
+      type: FrameTypes.METADATA_PUSH,
+      streamId: 0,
+      flags: Flags.METADATA,
+      metadata,
+    });
+    responderStream.onComplete();
   }
 
   close(error?: Error): void {
@@ -362,7 +368,10 @@ export class DefaultConnectionFrameHandler implements ConnectionFrameHandler {
         return;
       case FrameTypes.METADATA_PUSH:
         if (this.rsocket.metadataPush) {
-          // this.rsocket.metadataPush()
+          this.rsocket.metadataPush(frame.metadata, {
+            onError: () => {},
+            onComplete: () => {},
+          });
         }
 
         return;
