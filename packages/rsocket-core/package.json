@@ -2,6 +2,9 @@
   "name": "rsocket-core",
   "version": "1.0.0-alpha.3",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
   "main": "dist/index",
   "types": "dist/index",
   "files": [
