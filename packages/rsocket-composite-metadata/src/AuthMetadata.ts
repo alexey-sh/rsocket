@@ -55,7 +55,6 @@ export function encodeWellKnownAuthMetadata(
 
   const buffer = Buffer.allocUnsafe(authTypeIdBytesLength);
 
-  // eslint-disable-next-line no-bitwise
   buffer.writeUInt8(authType.identifier | streamMetadataKnownMask);
 
   return Buffer.concat([buffer, authPayloadBuffer]);
@@ -122,7 +121,6 @@ export function encodeSimpleAuthMetadata(
   const capacity = authTypeIdBytesLength + usernameLengthBytesLength;
   const buffer = Buffer.allocUnsafe(capacity);
 
-  // eslint-disable-next-line no-bitwise
   buffer.writeUInt8(
     WellKnownAuthType.SIMPLE.identifier | streamMetadataKnownMask
   );
@@ -141,7 +139,6 @@ export function encodeBearerAuthMetadata(token: string | Buffer): Buffer {
   const tokenBuffer = Buffer.from(token);
   const buffer = Buffer.allocUnsafe(authTypeIdBytesLength);
 
-  // eslint-disable-next-line no-bitwise
   buffer.writeUInt8(
     WellKnownAuthType.BEARER.identifier | streamMetadataKnownMask
   );
@@ -163,7 +160,6 @@ export function decodeAuthMetadata(metadata: Buffer): AuthMetadata {
   }
 
   const lengthOrId = metadata.readUInt8();
-  // eslint-disable-next-line no-bitwise
   const normalizedId = lengthOrId & streamMetadataLengthMask;
 
   if (normalizedId !== lengthOrId) {
