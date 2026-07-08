@@ -55,20 +55,20 @@ export class RequestChannelRequesterStream
 {
   readonly streamType = FrameTypes.REQUEST_CHANNEL;
 
-  private stream: Stream;
-  private inboundDone: boolean;
-  private outboundDone: boolean;
+  private stream!: Stream;
+  private inboundDone: boolean = false;
+  private outboundDone: boolean = false;
 
-  private hasExtension: boolean;
-  private extendedType: number;
+  private hasExtension: boolean = false;
+  private extendedType!: number;
   private extendedContent?: Buffer;
-  private flags: number;
+  private flags!: number;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
-  streamId: number;
+  streamId!: number;
 
   constructor(
     private readonly payload: Payload,
@@ -481,16 +481,16 @@ export class RequestChannelResponderStream
     OnExtensionSubscriber &
     OnTerminalSubscriber &
     OnNextSubscriber;
-  private readonly initialRequestN: number;
-  private readonly isComplete: boolean;
+  private readonly initialRequestN!: number;
+  private readonly isComplete!: boolean;
 
-  private inboundDone: boolean;
-  private defferedError: Error;
-  private outboundDone: boolean;
+  private inboundDone: boolean = false;
+  private defferedError?: Error;
+  private outboundDone: boolean = false;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
   constructor(
     readonly streamId: number,

@@ -53,19 +53,19 @@ export class RequestStreamRequesterStream
 {
   readonly streamType = FrameTypes.REQUEST_STREAM;
 
-  private done: boolean;
-  private stream: Stream;
+  private done: boolean = false;
+  private stream!: Stream;
 
-  private hasExtension: boolean;
-  private extendedType: number;
+  private hasExtension: boolean = false;
+  private extendedType!: number;
   private extendedContent?: Buffer;
-  private flags: number;
+  private flags!: number;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
-  streamId: number;
+  streamId!: number;
 
   constructor(
     private readonly payload: Payload,
@@ -306,13 +306,13 @@ export class RequestStreamResponderStream
 {
   readonly streamType = FrameTypes.REQUEST_STREAM;
 
-  private readonly initialRequestN: number;
+  private readonly initialRequestN!: number;
   private receiver?: Cancellable & Requestable & OnExtensionSubscriber;
-  private done: boolean;
+  private done: boolean = false;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
   constructor(
     readonly streamId: number,

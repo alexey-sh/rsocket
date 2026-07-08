@@ -44,8 +44,8 @@ export default class RSocketPublisherToPrefetchingObservable<
     Unsubscribable
 {
   private readonly limit;
-  private observer: Subscriber<T>;
-  protected subscriber: TSignalSender;
+  private observer!: Subscriber<T>;
+  protected subscriber!: TSignalSender;
 
   private received: number = 0;
 

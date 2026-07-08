@@ -32,8 +32,8 @@ export default class RSocketPublisherToObservable<T>
     OnExtensionSubscriber,
     Unsubscribable
 {
-  private observer: Subscriber<T>;
-  private cancellable: Cancellable;
+  private observer!: Subscriber<T>;
+  private cancellable!: Cancellable;
 
   constructor(
     private readonly exchangeFunction: (

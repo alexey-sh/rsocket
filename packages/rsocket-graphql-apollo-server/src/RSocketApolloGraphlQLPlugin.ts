@@ -15,7 +15,7 @@ type RSocketApolloGraphlQLPluginOptions = {
 export class RSocketApolloGraphlQLPlugin<TContext extends BaseContext>
   implements ApolloServerPlugin<TContext>
 {
-  private apolloServer: RSocketApolloServer;
+  private apolloServer!: RSocketApolloServer;
   constructor(private options: RSocketApolloGraphlQLPluginOptions) {}
 
   async serverWillStart(

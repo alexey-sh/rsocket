@@ -62,8 +62,8 @@ export class ClientServerInputMultiplexerDemultiplexer
 {
   private readonly registry: { [id: number]: StreamFrameHandler } = {};
 
-  protected connectionFramesHandler: ConnectionFrameHandler;
-  private requestFramesHandler: StreamRequestHandler;
+  protected connectionFramesHandler!: ConnectionFrameHandler;
+  private requestFramesHandler!: StreamRequestHandler;
 
   constructor(
     private readonly streamIdSupplier: StreamIdGenerator,

@@ -50,19 +50,19 @@ export class RequestResponseRequesterStream
     Reassembler.FragmentsHolder
 {
   readonly streamType = FrameTypes.REQUEST_RESPONSE;
-  private stream: Stream;
-  private done: boolean;
+  private stream!: Stream;
+  private done: boolean = false;
 
-  private hasExtension: boolean;
-  private extendedType: number;
+  private hasExtension: boolean = false;
+  private extendedType!: number;
   private extendedContent?: Buffer;
-  private flags: number;
+  private flags!: number;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
-  streamId: number;
+  streamId!: number;
 
   constructor(
     private readonly payload: Payload,
@@ -283,11 +283,11 @@ export class RequestResponseResponderStream
   readonly streamType = FrameTypes.REQUEST_RESPONSE;
 
   private receiver?: Cancellable & OnExtensionSubscriber;
-  private done: boolean;
+  private done: boolean = false;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
   constructor(
     readonly streamId: number,

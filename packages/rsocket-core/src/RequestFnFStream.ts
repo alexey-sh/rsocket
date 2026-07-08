@@ -38,9 +38,9 @@ export class RequestFnFRequesterStream
 {
   readonly streamType = FrameTypes.REQUEST_FNF;
 
-  private done: boolean;
+  private done: boolean = false;
 
-  streamId: number;
+  streamId!: number;
 
   constructor(
     private readonly payload: Payload,
@@ -140,11 +140,11 @@ export class RequestFnfResponderStream
   readonly streamType = FrameTypes.REQUEST_FNF;
 
   private cancellable?: Cancellable;
-  private done: boolean;
+  private done: boolean = false;
 
-  hasFragments: boolean;
-  data: Buffer;
-  metadata: Buffer;
+  hasFragments: boolean = false;
+  data!: Buffer;
+  metadata!: Buffer;
 
   constructor(
     readonly streamId: number,

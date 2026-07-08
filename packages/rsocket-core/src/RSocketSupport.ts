@@ -418,7 +418,7 @@ enum KeepAliveHandlerStates {
 
 export class KeepAliveHandler implements FrameHandler {
   private readonly outbound: Outbound;
-  private keepAliveLastReceivedMillis: number;
+  private keepAliveLastReceivedMillis!: number;
   private activeTimeout: any;
   private state: number = KeepAliveHandlerStates.Paused;
 

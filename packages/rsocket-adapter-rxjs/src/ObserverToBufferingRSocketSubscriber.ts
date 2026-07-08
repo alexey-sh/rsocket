@@ -36,14 +36,14 @@ class ObserverToBufferingRSocketSubscriber<T>
   extends Subscription
   implements Observer<T>, Cancellable, Requestable, OnExtensionSubscriber
 {
-  protected requested: number;
+  protected requested!: number;
   protected subscriber?: OnTerminalSubscriber &
     OnNextSubscriber &
     OnExtensionSubscriber;
-  protected inputCodec: Codec<T>;
-  protected wip: number;
-  private e: Error;
-  private done: boolean;
+  protected inputCodec!: Codec<T>;
+  protected wip!: number;
+  private e?: Error;
+  private done: boolean = false;
 
   constructor(
     requested: number,
