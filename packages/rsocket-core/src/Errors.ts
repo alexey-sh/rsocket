@@ -15,7 +15,10 @@
  */
 
 export class RSocketError extends Error {
-  constructor(readonly code: number | ErrorCodes, message?: string) {
+  constructor(
+    readonly code: number | ErrorCodes,
+    message?: string
+  ) {
     super(message);
   }
 }

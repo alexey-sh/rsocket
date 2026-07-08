@@ -260,11 +260,17 @@ export interface Entry {
 }
 
 export class ExplicitMimeTimeEntry implements Entry {
-  constructor(readonly content: Buffer, readonly type: string) {}
+  constructor(
+    readonly content: Buffer,
+    readonly type: string
+  ) {}
 }
 
 export class ReservedMimeTypeEntry implements Entry {
-  constructor(readonly content: Buffer, readonly type: number) {}
+  constructor(
+    readonly content: Buffer,
+    readonly type: number
+  ) {}
 
   /**
    * Since this entry represents a compressed id that couldn't be decoded, this is
@@ -276,7 +282,10 @@ export class ReservedMimeTypeEntry implements Entry {
 }
 
 export class WellKnownMimeTypeEntry implements Entry {
-  constructor(readonly content: Buffer, readonly type: WellKnownMimeType) {}
+  constructor(
+    readonly content: Buffer,
+    readonly type: WellKnownMimeType
+  ) {}
 
   get mimeType(): string {
     return this.type.string;

@@ -13,7 +13,7 @@ function mockDuplex(): any {
 }
 
 function mockFactory() {
-  return jest.fn(() => ({ handle: jest.fn() } as any));
+  return jest.fn(() => ({ handle: jest.fn() }) as any);
 }
 
 describe("WebsocketDuplexConnection close/error handling", () => {

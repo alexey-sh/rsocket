@@ -61,7 +61,7 @@ export function reassemble(
   const data =
     holder.data && dataFragment
       ? Buffer.concat([holder.data, dataFragment])
-      : holder.data ?? dataFragment;
+      : (holder.data ?? dataFragment);
 
   holder.data = undefined;
 

@@ -56,7 +56,10 @@ export interface RequestSpec {
 class DefaultRequestSpec implements RequestSpec {
   private readonly metadatas: Map<string | number | WellKnownMimeType, Buffer>;
 
-  constructor(route: string, private readonly rsocket: RSocket) {
+  constructor(
+    route: string,
+    private readonly rsocket: RSocket
+  ) {
     this.metadatas = new Map([
       [WellKnownMimeType.MESSAGE_RSOCKET_ROUTING, encodeRoutes(route)],
     ]);

@@ -15,7 +15,10 @@
  */
 
 export class WellKnownAuthType {
-  constructor(readonly string: string, readonly identifier: number) {}
+  constructor(
+    readonly string: string,
+    readonly identifier: number
+  ) {}
 
   /**
    * Find the {@link WellKnownAuthType} for the given identifier (as an {@link number}). Valid

@@ -55,9 +55,7 @@ export function* fragment(
   payload: Payload,
   fragmentSize: number,
   frameType:
-    | FrameTypes.PAYLOAD
-    | FrameTypes.REQUEST_FNF
-    | FrameTypes.REQUEST_RESPONSE,
+    FrameTypes.PAYLOAD | FrameTypes.REQUEST_FNF | FrameTypes.REQUEST_RESPONSE,
   isComplete: boolean = false
 ): Generator<PayloadFrame | RequestFnfFrame | RequestResponseFrame> {
   const dataLength = payload.data?.byteLength ?? 0;

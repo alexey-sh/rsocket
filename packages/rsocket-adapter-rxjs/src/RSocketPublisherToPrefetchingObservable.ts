@@ -33,9 +33,9 @@ import {
 } from "rxjs";
 
 export default class RSocketPublisherToPrefetchingObservable<
-    T,
-    TSignalSender extends Requestable & Cancellable & OnExtensionSubscriber
-  >
+  T,
+  TSignalSender extends Requestable & Cancellable & OnExtensionSubscriber,
+>
   extends Observable<T>
   implements
     OnTerminalSubscriber,

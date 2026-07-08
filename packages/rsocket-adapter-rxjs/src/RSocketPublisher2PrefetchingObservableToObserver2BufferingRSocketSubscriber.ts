@@ -30,8 +30,10 @@ import { applyMixins } from "./Utils";
 
 interface RSocketPublisher2PrefetchingObservableToObserver2BufferingRSocketSubscriber<
   IN,
-  OUT
-> extends ObserverToBufferingRSocketSubscriber<OUT>,
+  OUT,
+>
+  extends
+    ObserverToBufferingRSocketSubscriber<OUT>,
     RSocketPublisherToPrefetchingObservable<
       IN,
       OnTerminalSubscriber &
@@ -50,7 +52,7 @@ interface RSocketPublisher2PrefetchingObservableToObserver2BufferingRSocketSubsc
 
 class RSocketPublisher2PrefetchingObservableToObserver2BufferingRSocketSubscriber<
   IN,
-  OUT
+  OUT,
 > extends RSocketPublisherToPrefetchingObservable<
   IN,
   OnTerminalSubscriber &

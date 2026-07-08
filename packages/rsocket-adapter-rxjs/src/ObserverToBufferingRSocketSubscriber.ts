@@ -26,7 +26,8 @@ import { Observer, Subscription } from "rxjs";
 import { applyMixins } from "./Utils";
 
 interface ObserverToBufferingRSocketSubscriber<T>
-  extends Subscription,
+  extends
+    Subscription,
     Array<T>,
     Observer<T>,
     Cancellable,

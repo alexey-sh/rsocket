@@ -37,7 +37,8 @@ import RSocketPublisherToPrefetchingObservable from "./RSocketPublisherToPrefetc
 import { applyMixins } from "./Utils";
 
 interface Observer2BufferingSubscriberToPublisher2PrefetchingObservable<In, Out>
-  extends ObserverToBufferingRSocketSubscriber<In>,
+  extends
+    ObserverToBufferingRSocketSubscriber<In>,
     RSocketPublisherToPrefetchingObservable<
       Out,
       OnNextSubscriber &

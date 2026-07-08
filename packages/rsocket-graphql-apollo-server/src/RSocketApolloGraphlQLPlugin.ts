@@ -12,9 +12,9 @@ type RSocketApolloGraphlQLPluginOptions = {
   makeRSocketServer: ({ handler }: { handler: Partial<RSocket> }) => any;
 };
 
-export class RSocketApolloGraphlQLPlugin<TContext extends BaseContext>
-  implements ApolloServerPlugin<TContext>
-{
+export class RSocketApolloGraphlQLPlugin<
+  TContext extends BaseContext,
+> implements ApolloServerPlugin<TContext> {
   private apolloServer!: RSocketApolloServer;
   constructor(private options: RSocketApolloGraphlQLPluginOptions) {}
 
