@@ -943,7 +943,7 @@ describe("RequestChannelStream Test", () => {
       request.onNext(
         {
           data: Buffer.allocUnsafe(0),
-          metadata: null,
+          metadata: undefined,
         },
         false
       );
@@ -1006,7 +1006,7 @@ describe("RequestChannelStream Test", () => {
       request.onNext(
         {
           data: Buffer.allocUnsafe(0),
-          metadata: null,
+          metadata: undefined,
         },
         false
       );
@@ -1067,7 +1067,7 @@ describe("RequestChannelStream Test", () => {
       request.onNext(
         {
           data: Buffer.allocUnsafe(0),
-          metadata: null,
+          metadata: undefined,
         },
         false
       );
@@ -1121,7 +1121,7 @@ describe("RequestChannelStream Test", () => {
         request.onNext(
           {
             data: Buffer.allocUnsafe(0),
-            metadata: null,
+            metadata: undefined,
           },
           false
         );
@@ -1175,7 +1175,7 @@ describe("RequestChannelStream Test", () => {
         request.onNext(
           {
             data: Buffer.allocUnsafe(0),
-            metadata: null,
+            metadata: undefined,
           },
           false
         );
@@ -1202,14 +1202,14 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
-        let sink: Cancellable &
+        let payload!: Payload;
+        let sink!: Cancellable &
           Requestable &
           OnExtensionSubscriber &
           OnTerminalSubscriber &
           OnNextSubscriber;
         let isCompleted: boolean;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -1280,7 +1280,7 @@ describe("RequestChannelStream Test", () => {
         expect((mockHandler.onNext as jest.Mock).mock.calls[0]).toMatchObject([
           {
             data: Buffer.from("test"),
-            metadata: null,
+            metadata: undefined,
           },
           false,
         ]);
@@ -1296,14 +1296,14 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let sink: Cancellable &
+        let sink!: Cancellable &
           Requestable &
           OnExtensionSubscriber &
           OnTerminalSubscriber &
           OnNextSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -1393,14 +1393,14 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let sink: Cancellable &
+        let sink!: Cancellable &
           Requestable &
           OnExtensionSubscriber &
           OnTerminalSubscriber &
           OnNextSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -1454,14 +1454,14 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let sink: Cancellable &
+        let sink!: Cancellable &
           Requestable &
           OnExtensionSubscriber &
           OnTerminalSubscriber &
           OnNextSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -1509,8 +1509,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Send exception from handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -1551,8 +1551,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler and cancel inbound if complete earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -1598,8 +1598,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler if complete and cancelled earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -1646,8 +1646,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler if complete on both sides earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -1721,8 +1721,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler if errored", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -1763,7 +1763,7 @@ describe("RequestChannelStream Test", () => {
 
       it("send error should terminate execution", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
+        let payload!: Payload;
         const mockHandler = mock<
           Cancellable &
             Requestable &
@@ -1771,7 +1771,7 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let sink: OnNextSubscriber &
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -1828,9 +1828,9 @@ describe("RequestChannelStream Test", () => {
               OnTerminalSubscriber &
               OnNextSubscriber
           >();
-          let payload: Payload;
+          let payload!: Payload;
           let isCompleted: boolean;
-          let requested: number;
+          let requested!: number;
           const responder = new RequestChannelResponderStream(
             1,
             mockStream,
@@ -1922,9 +1922,9 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -2011,9 +2011,9 @@ describe("RequestChannelStream Test", () => {
               OnTerminalSubscriber &
               OnNextSubscriber
           >();
-          let payload: Payload;
+          let payload!: Payload;
           let isCompleted: boolean;
-          let requested: number;
+          let requested!: number;
           const responder = new RequestChannelResponderStream(
             1,
             mockStream,
@@ -2209,7 +2209,7 @@ describe("RequestChannelStream Test", () => {
           expect(mockHandler.onNext.mock.calls[1]).toMatchObject([
             {
               data: Buffer.from("hello"),
-              metadata: null,
+              metadata: undefined,
             },
             false,
           ]);
@@ -2218,7 +2218,7 @@ describe("RequestChannelStream Test", () => {
             expect(mockHandler.onNext.mock.calls[2]).toMatchObject([
               {
                 data: Buffer.from("world"),
-                metadata: null,
+                metadata: undefined,
               },
               true,
             ]);
@@ -2238,9 +2238,9 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -2297,9 +2297,9 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -2340,9 +2340,9 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestChannelResponderStream(
           1,
           mockStream,
@@ -2388,7 +2388,7 @@ describe("RequestChannelStream Test", () => {
             OnTerminalSubscriber &
             OnNextSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         let isCompleted: boolean;
         const responder = new RequestChannelResponderStream(
           1,
@@ -2429,8 +2429,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Send exception from handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -2504,8 +2504,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler and cancel inbound if complete earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -2584,8 +2584,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler if complete and cancelled earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -2665,8 +2665,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler if complete on both sides earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(
@@ -2740,8 +2740,8 @@ describe("RequestChannelStream Test", () => {
 
       it("Drop exception from handler if errored", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestChannelResponderStream(

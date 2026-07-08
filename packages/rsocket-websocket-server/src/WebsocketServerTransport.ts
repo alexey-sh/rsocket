@@ -48,8 +48,8 @@ const defaultFactory: SocketFactory = (options: SocketOptions) => {
 };
 
 export class WebsocketServerTransport implements ServerTransport {
-  private readonly host: string;
-  private readonly port: number;
+  private readonly host?: string;
+  private readonly port?: number;
   private readonly factory: SocketFactory;
 
   constructor(options: ServerOptions) {

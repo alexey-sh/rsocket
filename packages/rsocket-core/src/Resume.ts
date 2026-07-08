@@ -93,7 +93,8 @@ export class FrameStore {
   dropTo(lastReceivedPosition: number): void {
     let bytesToDrop = lastReceivedPosition - this._firstAvailableFramePosition;
     while (bytesToDrop > 0 && this.storedFrames.length > 0) {
-      const storedFrame = this.storedFrames.shift();
+      // Guaranteed present: the loop runs only while length > 0.
+      const storedFrame = this.storedFrames.shift()!;
       bytesToDrop -= sizeOfFrame(storedFrame);
     }
 

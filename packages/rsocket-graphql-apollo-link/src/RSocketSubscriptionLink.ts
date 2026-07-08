@@ -78,19 +78,19 @@ class SubscriptionClient {
       MAX_REQUEST_COUNT,
       {
         onComplete(): void {
-          observer.complete();
+          observer.complete?.();
         },
         onError(error: Error): void {
-          observer.error(error);
+          observer.error?.(error);
         },
         onExtension(): void {},
         onNext(payload: Payload, isComplete: boolean): void {
           const { data } = payload;
-          const decoded = data.toString();
+          const decoded = data!.toString();
           const deserialized = JSON.parse(decoded);
-          observer.next(deserialized);
+          observer.next?.(deserialized);
           if (isComplete) {
-            observer.complete();
+            observer.complete?.();
           }
         },
       }
@@ -125,7 +125,7 @@ export class RSocketSubscriptionLink extends ApolloLink {
             observer.next(value);
           },
           complete() {
-            observer.complete();
+            observer.complete?.();
           },
           error(err: any) {
             if (err instanceof Error) {

@@ -270,7 +270,7 @@ export class ReservedMimeTypeEntry implements Entry {
    * Since this entry represents a compressed id that couldn't be decoded, this is
    * always {@code null}.
    */
-  get mimeType(): string {
+  get mimeType(): string | undefined {
     return undefined;
   }
 }

@@ -61,7 +61,7 @@ export class RequestChannelRequesterStream
 
   private hasExtension: boolean;
   private extendedType: number;
-  private extendedContent: Buffer;
+  private extendedContent?: Buffer;
   private flags: number;
 
   hasFragments: boolean;
@@ -183,7 +183,7 @@ export class RequestChannelRequesterStream
             ? Reassembler.reassemble(this, frame.data, frame.metadata)
             : {
                 data: frame.data,
-                metadata: frame.metadata,
+                metadata: frame.metadata ?? undefined,
               };
 
           this.receiver.onNext(payload, hasComplete);
@@ -422,7 +422,7 @@ export class RequestChannelRequesterStream
     if (!this.streamId) {
       this.hasExtension = true;
       this.extendedType = extendedType;
-      this.extendedContent = content;
+      this.extendedContent = content ?? undefined;
       this.flags = canBeIgnored ? Flags.IGNORE : Flags.NONE;
       return;
     }
@@ -431,7 +431,7 @@ export class RequestChannelRequesterStream
       streamId: this.streamId,
       type: FrameTypes.EXT,
       extendedType,
-      extendedContent: content,
+      extendedContent: content ?? undefined,
       flags: canBeIgnored ? Flags.IGNORE : Flags.NONE,
     });
   }
@@ -523,7 +523,7 @@ export class RequestChannelResponderStream
 
     const payload = {
       data: frame.data,
-      metadata: frame.metadata,
+      metadata: frame.metadata ?? undefined,
     };
 
     const hasComplete = Flags.hasComplete(frame.flags);
@@ -564,7 +564,7 @@ export class RequestChannelResponderStream
           ? Reassembler.reassemble(this, frame.data, frame.metadata)
           : {
               data: frame.data,
-              metadata: frame.metadata,
+              metadata: frame.metadata ?? undefined,
             };
 
         const hasComplete = Flags.hasComplete(frame.flags);
@@ -594,7 +594,9 @@ export class RequestChannelResponderStream
               this.inboundDone = true;
             }
 
-            this.onError(error instanceof Error ? error : new Error(String(error)));
+            this.onError(
+              error instanceof Error ? error : new Error(String(error))
+            );
           }
         } else {
           if (hasComplete) {

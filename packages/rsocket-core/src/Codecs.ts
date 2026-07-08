@@ -108,7 +108,11 @@ export function writeUInt64BE(
   return buffer.writeUInt32BE(low, offset); // second half of uint64
 }
 
-type FrameWithPayload = { data: Buffer; flags: number; metadata: Buffer };
+type FrameWithPayload = {
+  data: Buffer | null | undefined;
+  flags: number;
+  metadata: Buffer | null | undefined;
+};
 
 /**
  * Frame header is:
@@ -211,11 +215,9 @@ export function deserializeFrame(buffer: Buffer): Frame {
     case FrameTypes.EXT:
       return deserializeExtFrame(buffer, streamId, flags);
     default:
-    // invariant(
-    //   false,
-    //   "RSocketBinaryFraming: Unsupported frame type `%s`.",
-    //   getFrameTypeName(type)
-    // );
+      throw new Error(
+        `RSocketBinaryFraming: Unsupported frame type \`${type}\`.`
+      );
   }
 }
 
@@ -253,11 +255,9 @@ export function serializeFrame(frame: Frame): Buffer {
     case FrameTypes.EXT:
       return serializeExtFrame(frame);
     default:
-    // invariant(
-    //   false,
-    //   "RSocketBinaryFraming: Unsupported frame type `%s`.",
-    //   getFrameTypeName(frame.type)
-    // );
+      throw new Error(
+        `RSocketBinaryFraming: Unsupported frame type \`${frame.type}\`.`
+      );
   }
 }
 
@@ -295,11 +295,9 @@ export function sizeOfFrame(frame: Frame): number {
     case FrameTypes.EXT:
       return sizeOfExtFrame(frame);
     default:
-    // invariant(
-    //   false,
-    //   "RSocketBinaryFraming: Unsupported frame type `%s`.",
-    //   getFrameTypeName(frame.type)
-    // );
+      throw new Error(
+        `RSocketBinaryFraming: Unsupported frame type \`${frame.type}\`.`
+      );
   }
 }
 

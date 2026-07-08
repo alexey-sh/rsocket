@@ -13,7 +13,7 @@ import {
 import { Stream, StreamFrameHandler } from "../../src/Transport";
 
 export class MockStream implements Stream {
-  handler: StreamFrameHandler;
+  handler?: StreamFrameHandler;
   frames: Frame[] = [];
   wasConnected: boolean = false;
 

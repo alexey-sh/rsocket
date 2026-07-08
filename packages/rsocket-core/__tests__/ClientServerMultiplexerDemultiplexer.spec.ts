@@ -19,7 +19,9 @@ describe("ClientServerMultiplexerDemultiplexer", function () {
   describe("handle()", () => {
     it("throws if called twice", async () => {
       // arrange
-      const frameHandlerStub = mock<ConnectionFrameHandler & StreamRequestHandler>();
+      const frameHandlerStub = mock<
+        ConnectionFrameHandler & StreamRequestHandler
+      >();
       const outbound = mock<Outbound & Closeable>();
       const multiplexerDemultiplexer =
         new ClientServerInputMultiplexerDemultiplexer(

@@ -9,16 +9,15 @@
     "types": ["node", "jest"],
     "declaration": true,
     "resolveJsonModule": true,
-    // Enabling `strict` incrementally. These are on; noImplicitAny +
-    // strictNullChecks land together next (they interact: without
-    // strictNullChecks, null/undefined widen to `any` and trip noImplicitAny),
-    // then strictPropertyInitialization, before this scaffold becomes
-    // strict:true.
+    // Enabling `strict` incrementally. These are on; strictPropertyInitialization
+    // lands next, before this scaffold becomes strict:true.
     "strict": false,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
+    "strictNullChecks": true,
     "useUnknownInCatchVariables": true
   },
   "exclude": [

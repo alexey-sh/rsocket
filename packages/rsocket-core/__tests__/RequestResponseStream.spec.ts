@@ -470,8 +470,8 @@ describe("RequestResponseStream Test", () => {
         const mockCancellableOrExtensionHandler = mock<
           Cancellable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -519,8 +519,8 @@ describe("RequestResponseStream Test", () => {
         const mockCancellableOrExtensionHandler = mock<
           Cancellable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -580,8 +580,8 @@ describe("RequestResponseStream Test", () => {
         const mockCancellableOrExtensionHandler = mock<
           Cancellable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -629,8 +629,8 @@ describe("RequestResponseStream Test", () => {
         const mockCancellableOrExtensionHandler = mock<
           Cancellable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnExtensionSubscriber &
+        let payload!: Payload;
+        let sink!: OnExtensionSubscriber &
           OnNextSubscriber &
           OnTerminalSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -673,8 +673,8 @@ describe("RequestResponseStream Test", () => {
 
       it("Send error back on exception in handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -717,8 +717,8 @@ describe("RequestResponseStream Test", () => {
         const mockCancellableOrExtensionHandler = mock<
           Cancellable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -761,7 +761,7 @@ describe("RequestResponseStream Test", () => {
       it("Handler Request and Send Complete", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable & OnExtensionSubscriber>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestResponseResponderStream(
           1,
           mockStream,
@@ -832,7 +832,7 @@ describe("RequestResponseStream Test", () => {
       it("Handler Request and Send Response", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable & OnExtensionSubscriber>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestResponseResponderStream(
           1,
           mockStream,
@@ -933,7 +933,7 @@ describe("RequestResponseStream Test", () => {
       it("Send error back on unexpected frame", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable & OnExtensionSubscriber>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestResponseResponderStream(
           1,
           mockStream,
@@ -980,7 +980,7 @@ describe("RequestResponseStream Test", () => {
       it("Cancel Reassembly on close", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable & OnExtensionSubscriber>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestResponseResponderStream(
           1,
           mockStream,
@@ -1011,7 +1011,7 @@ describe("RequestResponseStream Test", () => {
       it("Cancel Reassembly on Cancel Frame", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable & OnExtensionSubscriber>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestResponseResponderStream(
           1,
           mockStream,
@@ -1048,7 +1048,7 @@ describe("RequestResponseStream Test", () => {
       it("Cancel Reassembly on Error Frame", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable & OnExtensionSubscriber>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestResponseResponderStream(
           1,
           mockStream,
@@ -1086,8 +1086,8 @@ describe("RequestResponseStream Test", () => {
 
       it("Send exception from handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(
@@ -1160,8 +1160,8 @@ describe("RequestResponseStream Test", () => {
 
       it("Drop exception from handler if terminated earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestResponseResponderStream(

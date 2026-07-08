@@ -81,7 +81,7 @@ export class RSocketQueryLink extends ApolloLink {
           onExtension(): void {},
           onNext(payload: Payload, isComplete: boolean): void {
             const { data } = payload;
-            const decoded = data.toString();
+            const decoded = data!.toString();
             const deserialized = JSON.parse(decoded);
             observer.next(deserialized);
             observer.complete();

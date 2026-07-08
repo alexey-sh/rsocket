@@ -67,7 +67,8 @@ export class WebsocketDuplexConnection
     this.websocketDuplex.removeAllListeners();
     this.websocketDuplex.end();
 
-    delete this.websocketDuplex;
+    // Drop the socket reference for GC; the connection is closed after this.
+    Reflect.deleteProperty(this, "websocketDuplex");
 
     super.close(error);
   }
@@ -152,7 +153,9 @@ export class WebsocketDuplexConnection
         await connectionAcceptor(frame, connection);
         socket.resume();
       } catch (error) {
-        connection.close(error instanceof Error ? error : new Error(String(error)));
+        connection.close(
+          error instanceof Error ? error : new Error(String(error))
+        );
       }
     });
   }

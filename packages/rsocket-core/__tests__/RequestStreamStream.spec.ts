@@ -607,11 +607,11 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -668,11 +668,11 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -740,11 +740,11 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -793,11 +793,11 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let sink: OnExtensionSubscriber &
+        let payload!: Payload;
+        let sink!: OnExtensionSubscriber &
           OnNextSubscriber &
           OnTerminalSubscriber;
-        let requested: number;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -841,8 +841,8 @@ describe("RequestStreamStream Test", () => {
 
       it("Send error back on exception in handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestStreamResponderStream(
@@ -883,8 +883,8 @@ describe("RequestStreamStream Test", () => {
 
       it("Drop exception from handler if terminated earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestStreamResponderStream(
@@ -930,8 +930,8 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let requested: number;
+        let payload!: Payload;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -1006,8 +1006,8 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let requested: number;
+        let payload!: Payload;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -1141,8 +1141,8 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let requested: number;
+        let payload!: Payload;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -1194,8 +1194,8 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let requested: number;
+        let payload!: Payload;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -1231,8 +1231,8 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
-        let requested: number;
+        let payload!: Payload;
+        let requested!: number;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -1273,7 +1273,7 @@ describe("RequestStreamStream Test", () => {
         const mockHandler = mock<
           Cancellable & Requestable & OnExtensionSubscriber
         >();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestStreamResponderStream(
           1,
           mockStream,
@@ -1312,8 +1312,8 @@ describe("RequestStreamStream Test", () => {
 
       it("Send exception from handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestStreamResponderStream(
@@ -1387,8 +1387,8 @@ describe("RequestStreamStream Test", () => {
 
       it("Drop exception from handler if terminated earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnNextSubscriber &
+        let payload!: Payload;
+        let sink!: OnNextSubscriber &
           OnTerminalSubscriber &
           OnExtensionSubscriber;
         const responder = new RequestStreamResponderStream(

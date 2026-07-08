@@ -1,4 +1,4 @@
-function numHex(s) {
+function numHex(s: number) {
   let a = s.toString(16);
   if (a.length % 2 > 0) {
     a = "0" + a;
@@ -6,7 +6,7 @@ function numHex(s) {
   return a;
 }
 
-function strHex(s) {
+function strHex(s: string) {
   let a = "";
   for (let i = 0; i < s.length; i++) {
     a = a + numHex(s.charCodeAt(i));

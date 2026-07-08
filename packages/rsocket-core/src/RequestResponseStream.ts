@@ -55,7 +55,7 @@ export class RequestResponseRequesterStream
 
   private hasExtension: boolean;
   private extendedType: number;
-  private extendedContent: Buffer;
+  private extendedContent?: Buffer;
   private flags: number;
 
   hasFragments: boolean;
@@ -154,7 +154,7 @@ export class RequestResponseRequesterStream
             ? Reassembler.reassemble(this, frame.data, frame.metadata)
             : {
                 data: frame.data,
-                metadata: frame.metadata,
+                metadata: frame.metadata ?? undefined,
               };
 
           this.receiver.onNext(payload, true);
@@ -241,7 +241,7 @@ export class RequestResponseRequesterStream
     if (!this.streamId) {
       this.hasExtension = true;
       this.extendedType = extendedType;
-      this.extendedContent = content;
+      this.extendedContent = content ?? undefined;
       this.flags = canBeIgnored ? Flags.IGNORE : Flags.NONE;
       return;
     }
@@ -250,7 +250,7 @@ export class RequestResponseRequesterStream
       streamId: this.streamId,
       type: FrameTypes.EXT,
       extendedType,
-      extendedContent: content,
+      extendedContent: content ?? undefined,
       flags: canBeIgnored ? Flags.IGNORE : Flags.NONE,
     });
   }
@@ -310,7 +310,7 @@ export class RequestResponseResponderStream
 
     const payload = {
       data: frame.data,
-      metadata: frame.metadata,
+      metadata: frame.metadata ?? undefined,
     };
 
     try {
@@ -340,7 +340,9 @@ export class RequestResponseResponderStream
           try {
             this.receiver = this.handler(payload, this);
           } catch (error) {
-            this.onError(error instanceof Error ? error : new Error(String(error)));
+            this.onError(
+              error instanceof Error ? error : new Error(String(error))
+            );
           }
           return;
         }

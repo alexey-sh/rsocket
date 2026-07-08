@@ -67,7 +67,9 @@ export default class RSocketPublisherToPrefetchingObservable<
 
   onNext(payload: Payload, isComplete: boolean): void {
     this.received++;
-    this.observer.next(this.responseCodec.decode(payload.data));
+    this.observer.next(
+      this.responseCodec!.decode(payload.data ?? Buffer.allocUnsafe(0))
+    );
 
     if (isComplete) {
       this.observer.complete();

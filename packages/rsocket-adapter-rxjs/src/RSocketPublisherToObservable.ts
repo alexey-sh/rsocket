@@ -47,7 +47,9 @@ export default class RSocketPublisherToObservable<T>
   }
 
   onNext(payload: Payload, _isComplete: boolean): void {
-    this.observer.next(this.responseCodec.decode(payload.data));
+    this.observer.next(
+      this.responseCodec!.decode(payload.data ?? Buffer.allocUnsafe(0))
+    );
     this.observer.complete();
   }
 

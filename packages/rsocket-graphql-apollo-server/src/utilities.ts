@@ -17,7 +17,7 @@ function hasGraphQLJsonMimeType(metadata: Map<string, any>) {
 
 export function parsePayloadForQuery(payload: Payload) {
   const { data } = payload;
-  const decoded = data.toString();
+  const decoded = data!.toString();
   return JSON.parse(decoded);
 }
 
@@ -38,7 +38,7 @@ export function mapMetadata(payload: Payload) {
           break;
         }
         default: {
-          mappedMetaData.set(metaData.mimeType, metaData.content.toString());
+          mappedMetaData.set(metaData.mimeType!, metaData.content.toString());
           break;
         }
       }

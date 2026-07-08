@@ -37,7 +37,7 @@ class ObserverToBufferingRSocketSubscriber<T>
   implements Observer<T>, Cancellable, Requestable, OnExtensionSubscriber
 {
   protected requested: number;
-  protected subscriber: OnTerminalSubscriber &
+  protected subscriber?: OnTerminalSubscriber &
     OnNextSubscriber &
     OnExtensionSubscriber;
   protected inputCodec: Codec<T>;
@@ -56,7 +56,9 @@ class ObserverToBufferingRSocketSubscriber<T>
 
   protected init(
     requested: number,
-    subscriber: OnTerminalSubscriber & OnNextSubscriber & OnExtensionSubscriber,
+    subscriber:
+      | (OnTerminalSubscriber & OnNextSubscriber & OnExtensionSubscriber)
+      | undefined,
     inputCodec: Codec<T>
   ) {
     this.requested = requested;
@@ -137,9 +139,9 @@ class ObserverToBufferingRSocketSubscriber<T>
         if (next == undefined) {
           if (this.done) {
             if (this.e) {
-              this.subscriber.onError(this.e);
+              this.subscriber!.onError(this.e);
             } else {
-              this.subscriber.onComplete();
+              this.subscriber!.onComplete();
             }
             return;
           }
@@ -152,7 +154,7 @@ class ObserverToBufferingRSocketSubscriber<T>
         }
 
         const isTerminated = this.length == 0 && this.done;
-        this.subscriber.onNext(
+        this.subscriber!.onNext(
           {
             data: this.inputCodec.encode(next),
           },

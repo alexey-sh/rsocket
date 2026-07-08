@@ -24,7 +24,7 @@ export interface FragmentsHolder {
 
 export function add(
   holder: FragmentsHolder,
-  dataFragment: Buffer,
+  dataFragment: Buffer | null | undefined,
   metadataFragment?: Buffer | undefined | null
 ): boolean {
   if (!holder.hasFragments) {
@@ -37,9 +37,12 @@ export function add(
   }
 
   // TODO: add validation
-  holder.data = holder.data
-    ? Buffer.concat([holder.data, dataFragment])
-    : dataFragment;
+  // A metadata-only fragment carries no data, so only extend when present.
+  if (dataFragment) {
+    holder.data = holder.data
+      ? Buffer.concat([holder.data, dataFragment])
+      : dataFragment;
+  }
   if (holder.metadata && metadataFragment) {
     holder.metadata = Buffer.concat([holder.metadata, metadataFragment]);
   }
@@ -49,15 +52,16 @@ export function add(
 
 export function reassemble(
   holder: FragmentsHolder,
-  dataFragment: Buffer,
+  dataFragment: Buffer | null | undefined,
   metadataFragment: Buffer | undefined | null
 ): Payload {
   // TODO: add validation
   holder.hasFragments = false;
 
-  const data = holder.data
-    ? Buffer.concat([holder.data, dataFragment])
-    : dataFragment;
+  const data =
+    holder.data && dataFragment
+      ? Buffer.concat([holder.data, dataFragment])
+      : holder.data ?? dataFragment;
 
   holder.data = undefined;
 

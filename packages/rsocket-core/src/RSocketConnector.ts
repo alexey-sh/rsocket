@@ -91,7 +91,8 @@ export class RSocketConnector {
             outbound,
             outbound,
             new FrameStore(), // TODO: add size control
-            setupFrame.resumeToken.toString(),
+            // resume mode sets resumeToken (see setup frame above)
+            setupFrame.resumeToken!.toString(),
             async (self, frameStore) => {
               const multiplexerDemultiplexerProvider = (
                 outbound: Outbound & Closeable
@@ -104,7 +105,7 @@ export class RSocketConnector {
                   serverPosition: frameStore.lastReceivedFramePosition,
                   majorVersion: setupFrame.majorVersion,
                   minorVersion: setupFrame.minorVersion,
-                  resumeToken: setupFrame.resumeToken,
+                  resumeToken: setupFrame.resumeToken!,
                 });
                 return new ResumeOkAwaitingResumableClientServerInputMultiplexerDemultiplexer(
                   outbound,
@@ -115,8 +116,9 @@ export class RSocketConnector {
               let reconnectionAttempts = -1;
               const reconnector: () => Promise<DuplexConnection> = () => {
                 reconnectionAttempts++;
-                return config.resume
-                  .reconnectFunction(reconnectionAttempts)
+                // present here: this reconnector only runs in resume mode
+                return config
+                  .resume!.reconnectFunction(reconnectionAttempts)
                   .then(() =>
                     config.transport
                       .connect(multiplexerDemultiplexerProvider)
@@ -141,7 +143,7 @@ export class RSocketConnector {
       connection,
       setupFrame.lifetime
     );
-    const leaseHandler: LeaseHandler = config.lease
+    const leaseHandler: LeaseHandler | undefined = config.lease
       ? new LeaseHandler(
           config.lease.maxPendingRequests ?? 256,
           connection.multiplexerDemultiplexer

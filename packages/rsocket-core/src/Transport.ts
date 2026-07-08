@@ -151,6 +151,7 @@ export interface ServerTransport {
     multiplexerDemultiplexerFactory: (
       frame: Frame,
       outbound: Outbound & Closeable
-    ) => Multiplexer & Demultiplexer & FrameHandler
+      // undefined on resume/setup error paths that close the connection
+    ) => (Multiplexer & Demultiplexer & FrameHandler) | undefined
   ): Promise<Closeable>;
 }

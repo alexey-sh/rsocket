@@ -170,7 +170,7 @@ describe("RequestFnFStream Test", () => {
       it("Handler Request", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -198,7 +198,7 @@ describe("RequestFnFStream Test", () => {
       it("Cancel on close", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -228,8 +228,8 @@ describe("RequestFnFStream Test", () => {
 
       it("Drop exception from handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnTerminalSubscriber;
+        let payload!: Payload;
+        let sink!: OnTerminalSubscriber;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -258,8 +258,8 @@ describe("RequestFnFStream Test", () => {
 
       it("Drop exception from handler if terminated earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnTerminalSubscriber;
+        let payload!: Payload;
+        let sink!: OnTerminalSubscriber;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -291,7 +291,7 @@ describe("RequestFnFStream Test", () => {
       it("Handler Request", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -353,7 +353,7 @@ describe("RequestFnFStream Test", () => {
       it("Send error back on unexpected frame", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -397,7 +397,7 @@ describe("RequestFnFStream Test", () => {
       it("Cancel Reassembly on close", () => {
         const mockStream = new MockStream();
         const mockCancellable = mock<Cancellable>();
-        let payload: Payload;
+        let payload!: Payload;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -426,8 +426,8 @@ describe("RequestFnFStream Test", () => {
 
       it("Drop exception from handler", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnTerminalSubscriber;
+        let payload!: Payload;
+        let sink!: OnTerminalSubscriber;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,
@@ -490,8 +490,8 @@ describe("RequestFnFStream Test", () => {
 
       it("Drop exception from handler if terminated earlier", () => {
         const mockStream = new MockStream();
-        let payload: Payload;
-        let sink: OnTerminalSubscriber;
+        let payload!: Payload;
+        let sink!: OnTerminalSubscriber;
         const responder = new RequestFnfResponderStream(
           1,
           mockStream,

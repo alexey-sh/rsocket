@@ -66,7 +66,7 @@ export function* fragment(
 
   let remaining = fragmentSize;
 
-  let metadata: Buffer;
+  let metadata: Buffer | undefined;
 
   if (payload.metadata) {
     const metadataLength = payload.metadata.byteLength;
@@ -141,13 +141,14 @@ export function* fragment(
   }
 
   let dataPosition = 0;
-  let data: Buffer;
+  let data: Buffer | undefined;
 
   if (firstFrame) {
     const nextDataPosition = Math.min(dataLength, dataPosition + remaining);
 
-    data = payload.data.slice(dataPosition, nextDataPosition);
-    remaining -= data.byteLength;
+    // A data-less request frame still emits a first fragment (undefined data).
+    data = payload.data?.slice(dataPosition, nextDataPosition);
+    remaining -= data?.byteLength ?? 0;
     dataPosition = nextDataPosition;
 
     yield {
@@ -166,7 +167,8 @@ export function* fragment(
   while (dataPosition < dataLength) {
     const nextDataPosition = Math.min(dataLength, dataPosition + remaining);
 
-    data = payload.data.slice(dataPosition, nextDataPosition);
+    // dataPosition < dataLength implies dataLength > 0, so payload.data is set.
+    data = payload.data!.slice(dataPosition, nextDataPosition);
     remaining -= data.byteLength;
     dataPosition = nextDataPosition;
 
@@ -203,7 +205,7 @@ export function* fragmentWithRequestN(
 
   let remaining = fragmentSize;
 
-  let metadata: Buffer;
+  let metadata: Buffer | undefined;
 
   if (payload.metadata) {
     const metadataLength = payload.metadata.byteLength;
@@ -279,14 +281,15 @@ export function* fragmentWithRequestN(
   }
 
   let dataPosition = 0;
-  let data: Buffer;
+  let data: Buffer | undefined;
 
   if (firstFrame) {
     remaining -= Lengths.REQUEST;
     const nextDataPosition = Math.min(dataLength, dataPosition + remaining);
 
-    data = payload.data.slice(dataPosition, nextDataPosition);
-    remaining -= data.byteLength;
+    // A data-less request frame still emits a first fragment (undefined data).
+    data = payload.data?.slice(dataPosition, nextDataPosition);
+    remaining -= data?.byteLength ?? 0;
     dataPosition = nextDataPosition;
 
     yield {
@@ -306,7 +309,8 @@ export function* fragmentWithRequestN(
   while (dataPosition < dataLength) {
     const nextDataPosition = Math.min(dataLength, dataPosition + remaining);
 
-    data = payload.data.slice(dataPosition, nextDataPosition);
+    // dataPosition < dataLength implies dataLength > 0, so payload.data is set.
+    data = payload.data!.slice(dataPosition, nextDataPosition);
     remaining -= data.byteLength;
     dataPosition = nextDataPosition;
 

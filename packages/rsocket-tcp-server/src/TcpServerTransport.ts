@@ -28,9 +28,9 @@ import {
 import net from "net";
 import { TcpDuplexConnection } from "./TcpDuplexConnection";
 
-type TcpServerCreator = (options: net.ServerOpts) => net.Server;
+type TcpServerCreator = (options?: net.ServerOpts) => net.Server;
 
-type TcpServerOptionsSocketFactory = (options: net.ServerOpts) => net.Server;
+type TcpServerOptionsSocketFactory = (options?: net.ServerOpts) => net.Server;
 
 type TcpServerOptions = {
   serverOptions?: net.ServerOpts;
@@ -39,7 +39,7 @@ type TcpServerOptions = {
 };
 
 export class TcpServerTransport implements ServerTransport {
-  private readonly serverOptions: net.ServerOpts | undefined | null;
+  private readonly serverOptions: net.ServerOpts | undefined;
   private readonly listenOptions: net.ListenOptions;
   private readonly serverCreator: TcpServerCreator;
 

@@ -69,7 +69,7 @@ export class RSocketServer {
     this.acceptor = config.acceptor;
     this.transport = config.transport;
     this.lease = config.lease;
-    this.serverSideKeepAlive = config.serverSideKeepAlive;
+    this.serverSideKeepAlive = config.serverSideKeepAlive ?? false;
     this.sessionStore = config.resume ? {} : undefined;
     this.sessionTimeout = config.resume?.sessionTimeout ?? undefined;
   }
@@ -112,8 +112,9 @@ export class RSocketServer {
               }
 
               const leaseHandler = Flags.hasLease(frame.flags)
-                ? new LeaseHandler(
-                    this.lease.maxPendingRequests ?? 256,
+                ? // hasLease && !this.lease already rejected above
+                  new LeaseHandler(
+                    this.lease!.maxPendingRequests ?? 256,
                     connection.multiplexerDemultiplexer
                   )
                 : undefined;
@@ -126,7 +127,7 @@ export class RSocketServer {
                 {
                   data: frame.data,
                   dataMimeType: frame.dataMimeType,
-                  metadata: frame.metadata,
+                  metadata: frame.metadata ?? undefined,
                   metadataMimeType: frame.metadataMimeType,
                   flags: frame.flags,
                   keepAliveMaxLifetime: frame.lifetime,
@@ -265,12 +266,13 @@ export class RSocketServer {
                 outbound,
                 outbound,
                 new FrameStore(), // TODO: add size parameter
-                frame.resumeToken.toString(),
+                // RESUME_ENABLE flag guarantees the setup carries a token
+                frame.resumeToken!.toString(),
                 this.sessionStore,
                 this.sessionTimeout
               );
 
-            this.sessionStore[frame.resumeToken.toString()] =
+            this.sessionStore[frame.resumeToken!.toString()] =
               multiplexerDumiltiplexer;
 
             return multiplexerDumiltiplexer;

@@ -73,7 +73,8 @@ export class TcpDuplexConnection
 
     this.socket.end();
 
-    delete this.socket;
+    // Drop the socket reference for GC; the connection is closed after this.
+    Reflect.deleteProperty(this, "socket");
 
     super.close(error);
   }
@@ -171,7 +172,9 @@ export class TcpDuplexConnection
           );
         }
       } catch (error) {
-        connection.close(error instanceof Error ? error : new Error(String(error)));
+        connection.close(
+          error instanceof Error ? error : new Error(String(error))
+        );
       }
     };
     socket.once("data", readFirstFrame);

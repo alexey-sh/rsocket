@@ -32,7 +32,7 @@ export class RSocketApolloServer<
   constructor(config: Config<ContextFunctionParams>) {
     super(config);
     this.schema = makeExecutableSchema({
-      typeDefs: config.typeDefs,
+      typeDefs: config.typeDefs!,
       resolvers: config.resolvers,
     });
   }
@@ -149,7 +149,7 @@ export class RSocketApolloServer<
     payload: Payload
   ): Observable<ExecutionResult> {
     const runSubscription = async () => {
-      const operation = JSON.parse(payload.data.toString());
+      const operation = JSON.parse(payload.data!.toString());
       const options = await this.createGraphQLServerOptions(payload);
       const document = parse(operation.query, options.parseOptions);
       return subscribe({

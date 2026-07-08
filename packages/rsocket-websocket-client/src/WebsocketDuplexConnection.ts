@@ -65,7 +65,8 @@ export class WebsocketDuplexConnection
 
     this.websocket.close();
 
-    delete this.websocket;
+    // Drop the socket reference for GC; the connection is closed after this.
+    Reflect.deleteProperty(this, "websocket");
 
     super.close(error);
   }

@@ -82,7 +82,8 @@ export class TcpDuplexConnection
 
     this.socket.end();
 
-    delete this.socket;
+    // Drop the socket reference for GC; the connection is closed after this.
+    Reflect.deleteProperty(this, "socket");
 
     super.close(error);
   }

@@ -54,7 +54,9 @@ export function fireAndForget<TData>(
     rsocket: RSocket,
     metadata?: Map<string | number | WellKnownMimeType, Buffer>
   ) => {
-    const encodedMetadata = metadata ? encodeCompositeMetadata(metadata) : null;
+    const encodedMetadata = metadata
+      ? encodeCompositeMetadata(metadata)
+      : undefined;
     return new RSocketPublisherToObservable((s) =>
       rsocket.fireAndForget(
         {
@@ -79,7 +81,9 @@ export function requestResponse<TData, RData>(
     rsocket: RSocket,
     metadata?: Map<string | number | WellKnownMimeType, Buffer>
   ) => {
-    const encodedMetadata = metadata ? encodeCompositeMetadata(metadata) : null;
+    const encodedMetadata = metadata
+      ? encodeCompositeMetadata(metadata)
+      : undefined;
     return new RSocketPublisherToObservable(
       (s) =>
         rsocket.requestResponse(
@@ -108,7 +112,9 @@ export function requestStream<TData, RData>(
     rsocket: RSocket,
     metadata?: Map<string | number | WellKnownMimeType, Buffer>
   ) => {
-    const encodedMetadata = metadata ? encodeCompositeMetadata(metadata) : null;
+    const encodedMetadata = metadata
+      ? encodeCompositeMetadata(metadata)
+      : undefined;
     return new RSocketPublisherToPrefetchingObservable(
       (s, n) =>
         rsocket.requestStream(
@@ -158,7 +164,9 @@ export function requestChannel<TData, RData>(
     rsocket: RSocket,
     metadata?: Map<string | number | WellKnownMimeType, Buffer>
   ) => {
-    const encodedMetadata = metadata ? encodeCompositeMetadata(metadata) : null;
+    const encodedMetadata = metadata
+      ? encodeCompositeMetadata(metadata)
+      : undefined;
     return firstValueObservable.pipe(
       take(1),
       concatMap((firstValue) => {

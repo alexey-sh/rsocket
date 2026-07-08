@@ -163,7 +163,7 @@ export class RequestFnfResponderStream
 
     const payload = {
       data: frame.data,
-      metadata: frame.metadata,
+      metadata: frame.metadata ?? undefined,
     };
     try {
       this.cancellable = handler(payload, this);

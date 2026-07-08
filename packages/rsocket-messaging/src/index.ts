@@ -393,7 +393,7 @@ class DefaultRSocketResponder
 
   onClose(callback: (error?: Error) => void): void {}
 
-  findTypesRegistry(metadata: Buffer | undefined): TypesRegistry {
+  findTypesRegistry(metadata: Buffer | undefined): TypesRegistry | undefined {
     if (metadata && metadata.length) {
       for (let entry of decodeCompositeMetadata(metadata)) {
         if (

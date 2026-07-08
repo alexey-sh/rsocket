@@ -72,7 +72,7 @@ export class RSocketRequester implements RSocket {
   constructor(
     private readonly connection: DuplexConnection,
     private readonly fragmentSize: number,
-    private readonly leaseManager: LeaseManager | undefined | null
+    private readonly leaseManager: LeaseManager | undefined
   ) {}
 
   fireAndForget(
@@ -210,7 +210,8 @@ export class LeaseHandler implements LeaseManager {
     this.availableLease = frame.requestCount;
 
     while (this.availableLease > 0 && this.pendingRequests.length > 0) {
-      const handler = this.pendingRequests.shift();
+      // Guaranteed present: the enclosing loop runs only while length > 0.
+      const handler = this.pendingRequests.shift()!;
 
       this.availableLease--;
       this.multiplexer.createRequestStream(handler);
@@ -246,7 +247,8 @@ export class LeaseHandler implements LeaseManager {
     const rejection =
       error ?? new RSocketError(ErrorCodes.CANCELED, "Connection closed");
     while (this.pendingRequests.length > 0) {
-      const handler = this.pendingRequests.shift();
+      // Guaranteed present: the enclosing loop runs only while length > 0.
+      const handler = this.pendingRequests.shift()!;
       handler.handleReject(rejection);
     }
   }
@@ -377,7 +379,7 @@ export class DefaultConnectionFrameHandler implements ConnectionFrameHandler {
         return;
       case FrameTypes.METADATA_PUSH:
         if (this.rsocket.metadataPush) {
-          this.rsocket.metadataPush(frame.metadata, {
+          this.rsocket.metadataPush(frame.metadata ?? Buffer.allocUnsafe(0), {
             onError: () => {},
             onComplete: () => {},
           });

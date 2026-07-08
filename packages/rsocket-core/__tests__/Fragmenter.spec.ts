@@ -7,7 +7,7 @@ import {
 
 describe("isFragmentable", () => {
   it("returns false when fragmentSize is 0", () => {
-    const actual = isFragmentable(undefined, 0, undefined);
+    const actual = isFragmentable(undefined as any, 0, undefined as any);
     const expected = false;
     expect(actual).toBe(expected);
   });

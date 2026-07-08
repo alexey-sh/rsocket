@@ -59,7 +59,7 @@ describe("RSocketServer", () => {
         );
         const server = new RSocketServer({
           transport: mockTransport,
-          acceptor: undefined,
+          acceptor: undefined as any,
         });
         await server.bind();
         expect(mockConnection.close).toHaveBeenCalled();
