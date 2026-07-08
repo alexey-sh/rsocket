@@ -24,7 +24,7 @@
   "dependencies": {
     "rsocket-core": "^1.0.0-alpha.3",
     "rsocket-messaging": "^1.0.0-alpha.3",
-    "rxjs": "^7.4.0"
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "rimraf": "^6.1.3",
