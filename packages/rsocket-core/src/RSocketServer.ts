@@ -155,7 +155,7 @@ export class RSocketServer {
               );
               const streamsHandler = new DefaultStreamRequestHandler(
                 responder,
-                0
+                this.fragmentation?.maxOutboundFragmentSize ?? 0
               );
 
               connection.onClose((e) => {

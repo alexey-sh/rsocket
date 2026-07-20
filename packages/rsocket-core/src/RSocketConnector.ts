@@ -157,7 +157,10 @@ export class RSocketConnector {
       leaseHandler,
       responder
     );
-    const streamsHandler = new DefaultStreamRequestHandler(responder, 0);
+    const streamsHandler = new DefaultStreamRequestHandler(
+      responder,
+      config.fragmentation?.maxOutboundFragmentSize ?? 0
+    );
 
     connection.onClose((e) => {
       keepAliveSender.close();

@@ -1,6 +1,7 @@
 import { mock } from "jest-mock-extended";
 import {
   DefaultConnectionFrameHandler,
+  DefaultStreamRequestHandler,
   KeepAliveHandler,
   LeaseHandler,
   RSocketRequester,
@@ -19,6 +20,7 @@ import {
   StreamFrameHandler,
   StreamLifecycleHandler,
 } from "../src";
+import { MockStream } from "./test-utils/MockStream";
 
 describe("RSocketRequester.metadataPush", () => {
   it("sends a METADATA_PUSH frame on stream 0 and completes the responder", () => {
@@ -121,5 +123,47 @@ describe("DefaultConnectionFrameHandler lenient processing", () => {
 
     expect(mockOutbound.send).not.toHaveBeenCalled();
     expect(mockConnection.close).not.toHaveBeenCalled();
+  });
+});
+
+describe("DefaultStreamRequestHandler fragmentation", () => {
+  it("fragments a responder's outbound payload using the configured fragmentSize", () => {
+    // Regression: RSocketConnector/RSocketServer hardcoded fragmentSize 0 when
+    // building the responder-side handler, so responses were never fragmented
+    // even when fragmentation was configured (upstream #306/#307).
+    const responder: Partial<RSocket> = {
+      requestResponse: (_payload, senderStream) => {
+        // Respond with a 200-byte payload, larger than the 64-byte MTU below.
+        senderStream.onNext({ data: Buffer.allocUnsafe(200) }, true);
+        return { cancel() {}, onExtension() {} };
+      },
+    };
+    const requestFrame = {
+      type: FrameTypes.REQUEST_RESPONSE,
+      streamId: 1,
+      flags: Flags.NONE,
+      data: undefined,
+      metadata: undefined,
+    } as any;
+
+    const fragmented = new MockStream();
+    new DefaultStreamRequestHandler(responder, 64).handle(
+      requestFrame,
+      fragmented
+    );
+
+    const unfragmented = new MockStream();
+    new DefaultStreamRequestHandler(responder, 0).handle(
+      requestFrame,
+      unfragmented
+    );
+
+    // A 200-byte response must span multiple PAYLOAD frames at a 64-byte MTU...
+    expect(fragmented.frames.length).toBeGreaterThan(1);
+    expect(fragmented.frames.every((f) => f.type === FrameTypes.PAYLOAD)).toBe(
+      true
+    );
+    // ...whereas fragmentSize 0 (the bug) emits it as a single frame.
+    expect(unfragmented.frames).toHaveLength(1);
   });
 });
