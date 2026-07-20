@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { split } from "@apollo/client/core";
+import { split } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { RSocketQueryLink } from "./RSocketQueryLink";
 import { RSocketSubscriptionLink } from "./RSocketSubscriptionLink";

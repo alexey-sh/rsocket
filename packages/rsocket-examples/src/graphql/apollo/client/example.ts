@@ -19,14 +19,14 @@ import { makeRSocketLink } from "rsocket-graphql-apollo-link";
 import { WebsocketClientTransport } from "rsocket-websocket-client";
 import {
   ApolloClient,
+  DocumentNode,
   InMemoryCache,
   NormalizedCacheObject,
-} from "@apollo/client/core";
+} from "@apollo/client";
 import gql from "graphql-tag";
 import WebSocket from "ws";
 import { exit } from "process";
 import { WellKnownMimeType } from "rsocket-composite-metadata";
-import { DocumentNode } from "@apollo/client";
 
 let rsocketClient: RSocket;
 
@@ -44,7 +44,7 @@ function makeRSocketConnector() {
   });
 }
 
-function makeApolloClient({ rsocketClient }) {
+function makeApolloClient({ rsocketClient }: { rsocketClient: RSocket }) {
   return new ApolloClient({
     cache: new InMemoryCache(),
     link: makeRSocketLink({
@@ -55,7 +55,7 @@ function makeApolloClient({ rsocketClient }) {
 }
 
 function subcribe(
-  client: ApolloClient<NormalizedCacheObject>,
+  client: ApolloClient,
   variables: Record<any, any>,
   query: DocumentNode
 ) {
@@ -98,8 +98,8 @@ async function main() {
 
   console.log(echo);
 
-  await new Promise((resolve, reject) => {
-    let subscription = subcribe(
+  await new Promise((resolve) => {
+    subcribe(
       apolloClient,
       {},
       gql`

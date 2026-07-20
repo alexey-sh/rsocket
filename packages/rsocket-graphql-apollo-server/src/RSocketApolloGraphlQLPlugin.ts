@@ -1,15 +1,17 @@
 import {
   ApolloServerPlugin,
   BaseContext,
+  GraphQLServerContext,
   GraphQLServerListener,
-  GraphQLServiceContext,
-} from "apollo-server-plugin-base";
+} from "@apollo/server";
 import { RSocket } from "rsocket-core";
 import { RSocketApolloServer } from "./RSocketApolloServer";
 
 type RSocketApolloGraphlQLPluginOptions = {
   apolloServer?: RSocketApolloServer;
-  makeRSocketServer: ({ handler }: { handler: Partial<RSocket> }) => any;
+  makeRSocketServer: ({ handler }: { handler: Partial<RSocket> }) => {
+    bind(): Promise<{ close(): void }>;
+  };
 };
 
 export class RSocketApolloGraphlQLPlugin<
@@ -19,7 +21,7 @@ export class RSocketApolloGraphlQLPlugin<
   constructor(private options: RSocketApolloGraphlQLPluginOptions) {}
 
   async serverWillStart(
-    service: GraphQLServiceContext
+    _service: GraphQLServerContext
   ): Promise<GraphQLServerListener | void> {
     if (!this.apolloServer) {
       throw new Error(
@@ -27,8 +29,8 @@ export class RSocketApolloGraphlQLPlugin<
       );
     }
     const handler = this.apolloServer.getHandler();
-    let rSocketServer = this.options.makeRSocketServer({ handler });
-    let closeable = await rSocketServer.bind();
+    const rSocketServer = this.options.makeRSocketServer({ handler });
+    const closeable = await rSocketServer.bind();
     return {
       async drainServer() {
         closeable.close();

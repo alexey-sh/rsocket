@@ -8,38 +8,96 @@ import {
   RSocket,
 } from "rsocket-core";
 import {
-  ApolloServerBase,
-  GraphQLOptions,
-  runHttpQuery,
-} from "apollo-server-core";
-import { Headers, Request } from "apollo-server-env";
-import { Config } from "apollo-server-core/src/types";
-import { GraphQLSchema, parse, subscribe } from "graphql";
+  ApolloServer,
+  ApolloServerOptions,
+  ApolloServerOptionsWithSchema,
+  BaseContext,
+} from "@apollo/server";
+import {
+  ExecutionResult,
+  GraphQLSchema,
+  parse,
+  subscribe,
+  Source,
+} from "graphql";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { isAsyncGenerator, parsePayloadForQuery } from "./utilities";
 import { defer, from, Observable, of, switchMap } from "rxjs";
-import { ExecutionResult } from "graphql/execution/execute";
 
 export interface RSocketContext {
   payload: Payload;
 }
 
-export class RSocketApolloServer<
-  ContextFunctionParams = RSocketContext,
-> extends ApolloServerBase<ContextFunctionParams> {
-  private readonly schema: GraphQLSchema;
+type RSocketOperation = {
+  query: string;
+  variables?: Record<string, unknown>;
+  operationName?: string;
+  extensions?: Record<string, unknown>;
+};
 
-  constructor(config: Config<ContextFunctionParams>) {
-    super(config);
+/**
+ * Config accepted by RSocketApolloServer. Mirrors the subset of
+ * ApolloServerOptions we support, plus explicit typeDefs/resolvers so we can
+ * build the schema up front for the subscription path (which calls graphql's
+ * subscribe() directly, bypassing @apollo/server).
+ *
+ * `context` is a user-supplied factory called per RSocket request with the
+ * incoming Payload; whatever it returns is the `contextValue` handed to
+ * ApolloServer.executeOperation and graphql.subscribe.
+ */
+export type RSocketApolloServerConfig<TContext extends BaseContext> = Omit<
+  ApolloServerOptions<TContext>,
+  "gateway" | "schema"
+> & {
+  typeDefs: string | Source | (string | Source)[];
+  // resolvers are passed straight through to makeExecutableSchema; keep the
+  // type loose to match what @graphql-tools/schema accepts.
+  resolvers?: unknown;
+  context?: (params: RSocketContext) => TContext | Promise<TContext>;
+};
+
+export class RSocketApolloServer<
+  TContext extends BaseContext = RSocketContext,
+> {
+  private readonly schema: GraphQLSchema;
+  private readonly server: ApolloServer<TContext>;
+  private readonly contextFactory: (
+    params: RSocketContext
+  ) => TContext | Promise<TContext>;
+
+  constructor(config: RSocketApolloServerConfig<TContext>) {
     this.schema = makeExecutableSchema({
-      typeDefs: config.typeDefs!,
-      resolvers: config.resolvers,
+      typeDefs: config.typeDefs,
+      resolvers: config.resolvers as any,
+    });
+    const {
+      typeDefs: _typeDefs,
+      resolvers: _resolvers,
+      context,
+      ...rest
+    } = config;
+    this.contextFactory =
+      context ??
+      // Default: expose {payload} as the context, matching the v3 behavior of
+      // this package where resolvers received {payload} unless overridden.
+      ((params: RSocketContext) => params as any as TContext);
+    this.server = new ApolloServer<TContext>({
+      ...(rest as Omit<ApolloServerOptionsWithSchema<TContext>, "schema">),
+      schema: this.schema,
     });
   }
 
-  async createGraphQLServerOptions(payload: Payload): Promise<GraphQLOptions> {
-    const contextParams: RSocketContext = { payload };
-    return this.graphQLServerOptions(contextParams);
+  async start(): Promise<void> {
+    await this.server.start();
+  }
+
+  async stop(): Promise<void> {
+    await this.server.stop();
+  }
+
+  /** Underlying ApolloServer, exposed for plugin lifecycle wiring. */
+  getApolloServer(): ApolloServer<TContext> {
+    return this.server;
   }
 
   public getHandler(): Partial<RSocket> {
@@ -80,7 +138,7 @@ export class RSocketApolloServer<
             subscription.unsubscribe();
           },
           onExtension(): void {},
-          request(requestN: number): void {},
+          request(_requestN: number): void {},
         };
       },
     };
@@ -92,7 +150,7 @@ export class RSocketApolloServer<
       OnExtensionSubscriber
   ) {
     return {
-      next({ graphqlResponse }: { graphqlResponse: any }) {
+      next(graphqlResponse: string) {
         responderStream.onNext(
           {
             data: Buffer.from(graphqlResponse),
@@ -100,29 +158,46 @@ export class RSocketApolloServer<
           true
         );
       },
-      error(e: any) {
+      error(e: Error) {
         responderStream.onError(e);
       },
     };
   }
 
-  private runQueryOperation(payload: Payload): Observable<any> {
-    const query = parsePayloadForQuery(payload);
+  private runQueryOperation(payload: Payload): Observable<string> {
+    const parsed = parsePayloadForQuery(payload) as RSocketOperation;
 
-    return defer(() =>
-      from(
-        runHttpQuery([], {
-          method: "POST",
-          options: () => {
-            return this.createGraphQLServerOptions(payload);
-          },
-          query,
-          request: new Request("/graphql", {
-            headers: new Headers(),
-            method: "POST",
-          }),
-        })
-      )
+    return defer(() => from(this.executeOperation(parsed, payload)));
+  }
+
+  private async executeOperation(
+    operation: RSocketOperation,
+    payload: Payload
+  ): Promise<string> {
+    const contextValue = await this.contextFactory({ payload });
+
+    // @apollo/server v5 replaces v3's runHttpQuery. executeOperation auto-starts
+    // the server if start() hasn't been called yet, so no extra await needed.
+    const response = await this.server.executeOperation(
+      {
+        query: operation.query,
+        variables: operation.variables,
+        operationName: operation.operationName,
+        extensions: operation.extensions,
+      },
+      {
+        contextValue,
+      }
+    );
+
+    if (response.body.kind === "single") {
+      return JSON.stringify(response.body.singleResult);
+    }
+
+    // Incremental delivery (@defer/@stream) only ships with graphql@17; we pin
+    // graphql@16, so this branch is defensive.
+    throw new Error(
+      "Incremental delivery responses are not supported by RSocketApolloServer"
     );
   }
 
@@ -130,7 +205,7 @@ export class RSocketApolloServer<
     subscriber: OnTerminalSubscriber & OnNextSubscriber & OnExtensionSubscriber
   ) {
     return {
-      next(graphqlResponse: any) {
+      next(graphqlResponse: ExecutionResult) {
         subscriber.onNext(
           {
             data: Buffer.from(JSON.stringify(graphqlResponse)),
@@ -149,21 +224,25 @@ export class RSocketApolloServer<
     payload: Payload
   ): Observable<ExecutionResult> {
     const runSubscription = async () => {
-      const operation = JSON.parse(payload.data!.toString());
-      const options = await this.createGraphQLServerOptions(payload);
-      const document = parse(operation.query, options.parseOptions);
+      const operation = JSON.parse(
+        payload.data!.toString()
+      ) as RSocketOperation;
+      const document = parse(operation.query);
+      const contextValue = await this.contextFactory({ payload });
       return subscribe({
         document,
         operationName: operation.operationName,
         schema: this.schema,
         variableValues: operation.variables,
-        contextValue: options.context,
+        contextValue,
       });
     };
 
     return defer(() => from(runSubscription())).pipe(
       switchMap((result) => {
-        return isAsyncGenerator(result) ? from(result) : of(result);
+        return isAsyncGenerator<ExecutionResult>(result)
+          ? from(result)
+          : of(result);
       })
     );
   }

@@ -20,14 +20,11 @@
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "dependencies": {
-    "@apollo/client": "^3.5.10",
-    "@graphql-tools/schema": "^8.3.5",
+    "@apollo/server": "^5.5.1",
+    "@graphql-tools/schema": "^10.0.36",
     "rsocket-composite-metadata": "^1.0.0-alpha.1",
     "rsocket-core": "^1.0.0-alpha.1",
-    "apollo-server-plugin-base": "^3.6.2",
-    "apollo-server-core": "^3.6.6",
-    "apollo-server-env": "^4.2.1",
-    "graphql": "^16.3.0",
+    "graphql": "^16.11.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {

@@ -19,7 +19,12 @@ const pubsub = new PubSub();
 
 export const resolvers = {
   Query: {
-    echo: (parent, args, context, info) => {
+    echo: (
+      _parent: unknown,
+      args: { message?: string },
+      _context: unknown,
+      _info: unknown
+    ) => {
       const { message } = args;
       return {
         message,
@@ -27,7 +32,12 @@ export const resolvers = {
     },
   },
   Mutation: {
-    createMessage: async (_, { message }, context, info) => {
+    createMessage: async (
+      _parent: unknown,
+      { message }: { message: string },
+      _context: unknown,
+      _info: unknown
+    ) => {
       await pubsub.publish("POST_CREATED", {
         messageCreated: {
           message,
@@ -39,7 +49,8 @@ export const resolvers = {
     messageCreated: {
       // subscribe must return an AsyncIterator
       // https://www.apollographql.com/docs/apollo-server/data/subscriptions/#resolving-a-subscription
-      subscribe: () => pubsub.asyncIterator(["POST_CREATED"]),
+      // graphql-subscriptions v3 renamed asyncIterator -> asyncIterableIterator.
+      subscribe: () => pubsub.asyncIterableIterator(["POST_CREATED"]),
     },
   },
 };

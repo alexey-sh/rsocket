@@ -19,18 +19,15 @@ import { TcpClientTransport } from "rsocket-tcp-client";
 import { TcpServerTransport } from "rsocket-tcp-server";
 import { exit } from "process";
 import { makeRSocketLink } from "rsocket-graphql-apollo-link";
-import { RSocketApolloServer } from "rsocket-graphql-apollo-server";
 import {
-  ApolloClient,
-  InMemoryCache,
-  NormalizedCacheObject,
-} from "@apollo/client/core";
+  RSocketApolloGraphlQLPlugin,
+  RSocketApolloServer,
+} from "rsocket-graphql-apollo-server";
+import { ApolloClient, DocumentNode, InMemoryCache } from "@apollo/client";
 import gql from "graphql-tag";
 import { resolvers } from "./resolvers";
-import { DocumentNode } from "@apollo/client";
 import * as fs from "fs";
 import path from "path";
-import { RSocketApolloGraphlQLPlugin } from "rsocket-graphql-apollo-server/src/RSocketApolloGraphlQLPlugin";
 
 let apolloServer: RSocketApolloServer;
 let rsocketClient: RSocket;
@@ -41,7 +38,7 @@ function readSchema() {
   });
 }
 
-function makeRSocketServer({ handler }) {
+function makeRSocketServer({ handler }: { handler: Partial<RSocket> }) {
   return new RSocketServer({
     transport: new TcpServerTransport({
       listenOptions: {
@@ -66,18 +63,24 @@ function makeRSocketConnector() {
   });
 }
 
-function makeApolloServer({ typeDefs, resolvers }) {
+function makeApolloServer({
+  typeDefs,
+  resolvers,
+}: {
+  typeDefs: string;
+  resolvers: any;
+}) {
   const plugin = new RSocketApolloGraphlQLPlugin({ makeRSocketServer });
   const server = new RSocketApolloServer({
     typeDefs,
     resolvers,
-    plugins: [() => plugin],
+    plugins: [plugin],
   });
   plugin.setApolloServer(server);
   return server;
 }
 
-function makeApolloClient({ rsocketClient }) {
+function makeApolloClient({ rsocketClient }: { rsocketClient: RSocket }) {
   return new ApolloClient({
     cache: new InMemoryCache(),
     link: makeRSocketLink({
@@ -87,8 +90,8 @@ function makeApolloClient({ rsocketClient }) {
 }
 
 async function sendMessage(
-  client: ApolloClient<NormalizedCacheObject>,
-  { message }: { message: String }
+  client: ApolloClient,
+  { message }: { message: string }
 ) {
   console.log("Sending message", { message });
   await client.mutate({
@@ -106,7 +109,7 @@ async function sendMessage(
 }
 
 function subcribe(
-  client: ApolloClient<NormalizedCacheObject>,
+  client: ApolloClient,
   variables: Record<any, any>,
   query: DocumentNode
 ) {
@@ -129,7 +132,7 @@ async function main() {
   const apolloClient = makeApolloClient({ rsocketClient });
 
   console.log("\nSubscribing to messages.");
-  let subscription = subcribe(
+  const subscription = subcribe(
     apolloClient,
     {},
     gql`

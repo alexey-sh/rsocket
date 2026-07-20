@@ -16,12 +16,7 @@
 
 "use strict";
 
-import {
-  ApolloLink,
-  FetchResult,
-  Observable,
-  Operation,
-} from "@apollo/client/core";
+import { ApolloLink, Observable } from "@apollo/client";
 import { Payload, RSocket } from "rsocket-core";
 import {
   encodeCompositeMetadata,
@@ -45,7 +40,9 @@ export class RSocketQueryLink extends ApolloLink {
     super();
   }
 
-  public request(operation: Operation): Observable<FetchResult> | null {
+  public request(
+    operation: ApolloLink.Operation
+  ): Observable<ApolloLink.Result> {
     const json = JSON.stringify({
       ...operation,
       // per spec query should be a string (https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md#example-1)
@@ -67,7 +64,7 @@ export class RSocketQueryLink extends ApolloLink {
 
     const encodedMetadata = encodeCompositeMetadata(metadata);
 
-    return new Observable<FetchResult>((observer) => {
+    return new Observable<ApolloLink.Result>((observer) => {
       this.client.requestResponse(
         {
           data: encodedData,
@@ -79,10 +76,10 @@ export class RSocketQueryLink extends ApolloLink {
             observer.error(error);
           },
           onExtension(): void {},
-          onNext(payload: Payload, isComplete: boolean): void {
+          onNext(payload: Payload, _isComplete: boolean): void {
             const { data } = payload;
             const decoded = data!.toString();
-            const deserialized = JSON.parse(decoded);
+            const deserialized = JSON.parse(decoded) as ApolloLink.Result;
             observer.next(deserialized);
             observer.complete();
           },

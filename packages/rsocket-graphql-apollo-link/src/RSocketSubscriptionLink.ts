@@ -16,14 +16,9 @@
 
 "use strict";
 
-import {
-  ApolloError,
-  ApolloLink,
-  FetchResult,
-  Observable,
-  Observer,
-  Operation,
-} from "@apollo/client/core";
+import { ApolloLink, Observable } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import { PartialObserver } from "rxjs";
 import { MAX_REQUEST_COUNT, Payload, RSocket } from "rsocket-core";
 import { ExecutionResult, print } from "graphql";
 import {
@@ -33,10 +28,10 @@ import {
 } from "rsocket-composite-metadata";
 
 type SubscribeOperation = {
-  query: String;
-  variables: Record<string, any>;
-  operationName: string;
-  extensions: Record<string, any>;
+  query: string;
+  variables: Record<string, unknown>;
+  operationName?: string;
+  extensions: Record<string, unknown>;
 };
 
 type SubscriptionLinkOptions = {
@@ -54,7 +49,7 @@ class SubscriptionClient {
 
   subscribe<Data = Record<string, unknown>, Extensions = unknown>(
     operation: SubscribeOperation,
-    observer: Observer<ExecutionResult<Data, Extensions>>
+    observer: PartialObserver<ExecutionResult<Data, Extensions>>
   ): () => void {
     const metadata = new Map<WellKnownMimeType, Buffer>();
     metadata.set(
@@ -70,7 +65,7 @@ class SubscriptionClient {
 
     const encodedMetadata = encodeCompositeMetadata(metadata);
 
-    let requestStream = this.client.requestStream(
+    const requestStream = this.client.requestStream(
       {
         data: Buffer.from(JSON.stringify(operation)),
         metadata: encodedMetadata,
@@ -87,7 +82,10 @@ class SubscriptionClient {
         onNext(payload: Payload, isComplete: boolean): void {
           const { data } = payload;
           const decoded = data!.toString();
-          const deserialized = JSON.parse(decoded);
+          const deserialized = JSON.parse(decoded) as ExecutionResult<
+            Data,
+            Extensions
+          >;
           observer.next?.(deserialized);
           if (isComplete) {
             observer.complete?.();
@@ -112,8 +110,10 @@ export class RSocketSubscriptionLink extends ApolloLink {
     this.client = new SubscriptionClient(client, options);
   }
 
-  public request(operation: Operation): Observable<FetchResult> | null {
-    return new Observable<FetchResult>((observer) => {
+  public request(
+    operation: ApolloLink.Operation
+  ): Observable<ApolloLink.Result> {
+    return new Observable<ApolloLink.Result>((observer) => {
       const serializedQuery = print(operation.query);
       return this.client.subscribe(
         {
@@ -122,19 +122,22 @@ export class RSocketSubscriptionLink extends ApolloLink {
         },
         {
           next(value: ExecutionResult) {
-            observer.next(value);
+            observer.next(value as ApolloLink.Result);
           },
           complete() {
-            observer.complete?.();
+            observer.complete();
           },
-          error(err: any) {
+          error(err: unknown) {
             if (err instanceof Error) {
               return observer.error(err);
             }
 
+            // @apollo/client v4 dropped ApolloError; the closest replacement
+            // for "server returned errors, not a network exception" is
+            // CombinedGraphQLErrors.
             return observer.error(
-              new ApolloError({
-                graphQLErrors: Array.isArray(err) ? err : [err],
+              new CombinedGraphQLErrors({
+                errors: Array.isArray(err) ? err : [err],
               })
             );
           },
