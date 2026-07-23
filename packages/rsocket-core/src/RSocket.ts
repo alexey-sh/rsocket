@@ -20,8 +20,8 @@ import { Closeable } from "./Common";
  * A single unit of data exchanged between the peers of a `RSocket`.
  */
 export type Payload = {
-  data: Buffer | null | undefined;
-  metadata?: Buffer;
+  data: Uint8Array | null | undefined;
+  metadata?: Uint8Array;
 };
 
 export type SetupPayload = {
@@ -30,9 +30,9 @@ export type SetupPayload = {
   keepAliveInterval: number;
   keepAliveMaxLifetime: number;
   flags: number;
-  resumeToken: Buffer | null | undefined;
-  data: Buffer | null | undefined;
-  metadata?: Buffer;
+  resumeToken: Uint8Array | null | undefined;
+  data: Uint8Array | null | undefined;
+  metadata?: Uint8Array;
 };
 
 export interface Cancellable {
@@ -46,7 +46,7 @@ export interface Requestable {
 export interface OnExtensionSubscriber {
   onExtension(
     extendedType: number,
-    content: Buffer | null | undefined,
+    content: Uint8Array | null | undefined,
     canBeIgnored: boolean
   ): void;
 }
@@ -124,5 +124,8 @@ export interface RSocket extends Closeable {
    * Metadata-Push interaction model of `ReactiveSocket`. The returned Publisher
    * resolves when the passed `payload` is successfully handled.
    */
-  metadataPush(metadata: Buffer, responderStream: OnTerminalSubscriber): void;
+  metadataPush(
+    metadata: Uint8Array,
+    responderStream: OnTerminalSubscriber
+  ): void;
 }

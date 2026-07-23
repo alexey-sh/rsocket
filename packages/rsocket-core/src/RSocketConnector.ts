@@ -52,7 +52,7 @@ export type ConnectorConfig = {
   };
   resume?: {
     cacheSize?: number;
-    tokenGenerator: () => Buffer;
+    tokenGenerator: () => Uint8Array;
     reconnectFunction: (attempt: number) => Promise<void>;
   };
 };

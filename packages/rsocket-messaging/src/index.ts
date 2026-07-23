@@ -39,7 +39,9 @@ export interface Codec<D> {
   mimeType: string;
 
   encode(entity: D): Buffer;
-  decode(buffer: Buffer): D;
+  // Accept any bytes: core delivers payload data as Uint8Array (Buffer is a
+  // subclass, so existing Buffer-based Codec impls remain valid).
+  decode(buffer: Uint8Array): D;
 }
 
 export interface RequestSpec {
@@ -396,9 +398,13 @@ class DefaultRSocketResponder
 
   onClose(callback: (error?: Error) => void): void {}
 
-  findTypesRegistry(metadata: Buffer | undefined): TypesRegistry | undefined {
+  findTypesRegistry(
+    metadata: Uint8Array | undefined
+  ): TypesRegistry | undefined {
     if (metadata && metadata.length) {
-      for (let entry of decodeCompositeMetadata(metadata)) {
+      // TODO(Phase E2): drop the cast once rsocket-composite-metadata accepts
+      // Uint8Array. Runtime-safe today — Node transports deliver Buffer.
+      for (let entry of decodeCompositeMetadata(metadata as Buffer)) {
         if (
           entry.mimeType === WellKnownMimeType.MESSAGE_RSOCKET_ROUTING.string
         ) {

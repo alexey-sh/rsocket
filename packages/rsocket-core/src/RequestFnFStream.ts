@@ -143,8 +143,8 @@ export class RequestFnfResponderStream
   private done: boolean = false;
 
   hasFragments: boolean = false;
-  data!: Buffer;
-  metadata!: Buffer;
+  data!: Uint8Array;
+  metadata!: Uint8Array;
 
   constructor(
     readonly streamId: number,

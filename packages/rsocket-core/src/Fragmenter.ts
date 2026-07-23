@@ -25,6 +25,7 @@ import {
   RequestStreamFrame,
 } from "./Frames";
 import { Payload } from "./RSocket";
+import * as Bytes from "./Bytes";
 
 export function isFragmentable(
   payload: Payload,
@@ -64,14 +65,14 @@ export function* fragment(
 
   let remaining = fragmentSize;
 
-  let metadata: Buffer | undefined;
+  let metadata: Uint8Array | undefined;
 
   if (payload.metadata) {
     const metadataLength = payload.metadata.byteLength;
 
     if (metadataLength === 0) {
       remaining -= Lengths.METADATA;
-      metadata = Buffer.allocUnsafe(0);
+      metadata = Bytes.alloc(0);
     } else {
       let metadataPosition = 0;
       if (firstFrame) {
@@ -139,7 +140,7 @@ export function* fragment(
   }
 
   let dataPosition = 0;
-  let data: Buffer | undefined;
+  let data: Uint8Array | undefined;
 
   if (firstFrame) {
     const nextDataPosition = Math.min(dataLength, dataPosition + remaining);
@@ -203,14 +204,14 @@ export function* fragmentWithRequestN(
 
   let remaining = fragmentSize;
 
-  let metadata: Buffer | undefined;
+  let metadata: Uint8Array | undefined;
 
   if (payload.metadata) {
     const metadataLength = payload.metadata.byteLength;
 
     if (metadataLength === 0) {
       remaining -= Lengths.METADATA;
-      metadata = Buffer.allocUnsafe(0);
+      metadata = Bytes.alloc(0);
     } else {
       let metadataPosition = 0;
       if (firstFrame) {
@@ -279,7 +280,7 @@ export function* fragmentWithRequestN(
   }
 
   let dataPosition = 0;
-  let data: Buffer | undefined;
+  let data: Uint8Array | undefined;
 
   if (firstFrame) {
     remaining -= Lengths.REQUEST;

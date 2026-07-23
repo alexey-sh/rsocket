@@ -61,12 +61,12 @@ export class RequestChannelRequesterStream
 
   private hasExtension: boolean = false;
   private extendedType!: number;
-  private extendedContent?: Buffer;
+  private extendedContent?: Uint8Array;
   private flags!: number;
 
   hasFragments: boolean = false;
-  data!: Buffer;
-  metadata!: Buffer;
+  data!: Uint8Array;
+  metadata!: Uint8Array;
 
   streamId!: number;
 
@@ -412,7 +412,7 @@ export class RequestChannelRequesterStream
 
   onExtension(
     extendedType: number,
-    content: Buffer | null | undefined,
+    content: Uint8Array | null | undefined,
     canBeIgnored: boolean
   ): void {
     if (this.outboundDone) {
@@ -489,8 +489,8 @@ export class RequestChannelResponderStream
   private outboundDone: boolean = false;
 
   hasFragments: boolean = false;
-  data!: Buffer;
-  metadata!: Buffer;
+  data!: Uint8Array;
+  metadata!: Uint8Array;
 
   constructor(
     readonly streamId: number,
@@ -784,7 +784,7 @@ export class RequestChannelResponderStream
 
   onExtension(
     extendedType: number,
-    content: Buffer,
+    content: Uint8Array,
     canBeIgnored: boolean
   ): void {
     if (this.outboundDone && this.inboundDone) {

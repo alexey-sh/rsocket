@@ -24,7 +24,11 @@ export function parsePayloadForQuery(payload: Payload) {
 export function mapMetadata(payload: Payload) {
   const mappedMetaData = new Map<string, any>();
   if (payload.metadata) {
-    const decodedCompositeMetaData = decodeCompositeMetadata(payload.metadata);
+    // TODO(Phase E2): drop the cast once rsocket-composite-metadata accepts
+    // Uint8Array. Runtime-safe today — Node transports deliver Buffer.
+    const decodedCompositeMetaData = decodeCompositeMetadata(
+      payload.metadata as Buffer
+    );
 
     for (let metaData of decodedCompositeMetaData) {
       switch (metaData.mimeType) {

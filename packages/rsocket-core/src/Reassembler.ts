@@ -15,17 +15,18 @@
  */
 
 import { Payload } from "./RSocket";
+import * as Bytes from "./Bytes";
 
 export interface FragmentsHolder {
   hasFragments: boolean;
-  data: Buffer | undefined | null;
-  metadata: Buffer | undefined | null;
+  data: Uint8Array | undefined | null;
+  metadata: Uint8Array | undefined | null;
 }
 
 export function add(
   holder: FragmentsHolder,
-  dataFragment: Buffer | null | undefined,
-  metadataFragment?: Buffer | undefined | null
+  dataFragment: Uint8Array | null | undefined,
+  metadataFragment?: Uint8Array | undefined | null
 ): boolean {
   if (!holder.hasFragments) {
     holder.hasFragments = true;
@@ -40,11 +41,11 @@ export function add(
   // A metadata-only fragment carries no data, so only extend when present.
   if (dataFragment) {
     holder.data = holder.data
-      ? Buffer.concat([holder.data, dataFragment])
+      ? Bytes.concat([holder.data, dataFragment])
       : dataFragment;
   }
   if (holder.metadata && metadataFragment) {
-    holder.metadata = Buffer.concat([holder.metadata, metadataFragment]);
+    holder.metadata = Bytes.concat([holder.metadata, metadataFragment]);
   }
 
   return true;
@@ -52,22 +53,22 @@ export function add(
 
 export function reassemble(
   holder: FragmentsHolder,
-  dataFragment: Buffer | null | undefined,
-  metadataFragment: Buffer | undefined | null
+  dataFragment: Uint8Array | null | undefined,
+  metadataFragment: Uint8Array | undefined | null
 ): Payload {
   // TODO: add validation
   holder.hasFragments = false;
 
   const data =
     holder.data && dataFragment
-      ? Buffer.concat([holder.data, dataFragment])
+      ? Bytes.concat([holder.data, dataFragment])
       : (holder.data ?? dataFragment);
 
   holder.data = undefined;
 
   if (holder.metadata) {
     const metadata = metadataFragment
-      ? Buffer.concat([holder.metadata, metadataFragment])
+      ? Bytes.concat([holder.metadata, metadataFragment])
       : holder.metadata;
 
     holder.metadata = undefined;

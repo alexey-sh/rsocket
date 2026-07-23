@@ -36,6 +36,7 @@ import {
   ResumeOkFrame,
   SetupFrame,
 } from "./Frames";
+import * as Bytes from "./Bytes";
 
 export const FLAGS_MASK = 0x3ff; // low 10 bits
 export const FRAME_TYPE_OFFSET = 10; // frame type is offset 10 bytes within the uint16 containing type + flags
@@ -54,64 +55,20 @@ export const MAX_VERSION = 0xffff; // uint16
 
 export type Encoding = "ascii" | "base64" | "hex" | "utf8";
 
-/**
- * Mimimum value that would overflow bitwise operators (2^32).
- */
-const BITWISE_OVERFLOW = 0x100000000;
-
-/**
- * Read a uint24 from a buffer starting at the given offset.
- */
-export function readUInt24BE(buffer: Buffer, offset: number): number {
-  const val1 = buffer.readUInt8(offset) << 16;
-  const val2 = buffer.readUInt8(offset + 1) << 8;
-  const val3 = buffer.readUInt8(offset + 2);
-  return val1 | val2 | val3;
-}
-
-/**
- * Writes a uint24 to a buffer starting at the given offset, returning the
- * offset of the next byte.
- */
-export function writeUInt24BE(
-  buffer: Buffer,
-  value: number,
-  offset: number
-): number {
-  offset = buffer.writeUInt8(value >>> 16, offset); // 3rd byte
-  offset = buffer.writeUInt8((value >>> 8) & 0xff, offset); // 2nd byte
-  return buffer.writeUInt8(value & 0xff, offset); // 1st byte
-}
-
-/**
- * Read a uint64 (technically supports up to 53 bits per JS number
- * representation).
- */
-export function readUInt64BE(buffer: Buffer, offset: number): number {
-  const high = buffer.readUInt32BE(offset);
-  const low = buffer.readUInt32BE(offset + 4);
-  return high * BITWISE_OVERFLOW + low;
-}
-
-/**
- * Write a uint64 (technically supports up to 53 bits per JS number
- * representation).
- */
-export function writeUInt64BE(
-  buffer: Buffer,
-  value: number,
-  offset: number
-): number {
-  const high = (value / BITWISE_OVERFLOW) | 0;
-  const low = value % BITWISE_OVERFLOW;
-  offset = buffer.writeUInt32BE(high, offset); // first half of uint64
-  return buffer.writeUInt32BE(low, offset); // second half of uint64
-}
+// The uint24/uint64 read/write helpers now live in Bytes (over Uint8Array).
+// Re-export them for API compatibility — rsocket-composite-metadata imports
+// readUInt24BE/writeUInt24BE from "rsocket-core".
+export {
+  readUInt24BE,
+  writeUInt24BE,
+  readUInt64BE,
+  writeUInt64BE,
+} from "./Bytes";
 
 type FrameWithPayload = {
-  data: Buffer | null | undefined;
+  data: Uint8Array | null | undefined;
   flags: number;
-  metadata: Buffer | null | undefined;
+  metadata: Uint8Array | null | undefined;
 };
 
 /**
@@ -129,9 +86,11 @@ const UINT24_SIZE = 3;
 /**
  * Reads a frame from a buffer that is prefixed with the frame length.
  */
-export function deserializeFrameWithLength(buffer: Buffer): Frame {
-  const frameLength = readUInt24BE(buffer, 0);
-  return deserializeFrame(buffer.slice(UINT24_SIZE, UINT24_SIZE + frameLength));
+export function deserializeFrameWithLength(buffer: Uint8Array): Frame {
+  const frameLength = Bytes.readUInt24BE(buffer, 0);
+  return deserializeFrame(
+    buffer.subarray(UINT24_SIZE, UINT24_SIZE + frameLength)
+  );
 }
 
 /**
@@ -139,17 +98,19 @@ export function deserializeFrameWithLength(buffer: Buffer): Frame {
  * by zero or more bytes of a (partial) subsequent frame, returns an array of
  * the frames and an int representing the buffer offset.
  */
-export function* deserializeFrames(buffer: Buffer): Generator<[Frame, number]> {
+export function* deserializeFrames(
+  buffer: Uint8Array
+): Generator<[Frame, number]> {
   let offset = 0;
   while (offset + UINT24_SIZE < buffer.length) {
-    const frameLength = readUInt24BE(buffer, offset);
+    const frameLength = Bytes.readUInt24BE(buffer, offset);
     const frameStart = offset + UINT24_SIZE;
     const frameEnd = frameStart + frameLength;
     if (frameEnd > buffer.length) {
       // not all bytes of next frame received
       break;
     }
-    const frameBuffer = buffer.slice(frameStart, frameEnd);
+    const frameBuffer = buffer.subarray(frameStart, frameEnd);
     const frame = deserializeFrame(frameBuffer);
     offset = frameEnd;
     yield [frame, offset];
@@ -159,27 +120,27 @@ export function* deserializeFrames(buffer: Buffer): Generator<[Frame, number]> {
 /**
  * Writes a frame to a buffer with a length prefix.
  */
-export function serializeFrameWithLength(frame: Frame): Buffer {
+export function serializeFrameWithLength(frame: Frame): Uint8Array {
   const buffer = serializeFrame(frame);
-  const lengthPrefixed = Buffer.allocUnsafe(buffer.length + UINT24_SIZE);
-  writeUInt24BE(lengthPrefixed, buffer.length, 0);
-  buffer.copy(lengthPrefixed, UINT24_SIZE);
+  const lengthPrefixed = Bytes.alloc(buffer.length + UINT24_SIZE);
+  Bytes.writeUInt24BE(lengthPrefixed, buffer.length, 0);
+  Bytes.copy(buffer, lengthPrefixed, UINT24_SIZE);
   return lengthPrefixed;
 }
 
 /**
  * Read a frame from the buffer.
  */
-export function deserializeFrame(buffer: Buffer): Frame {
+export function deserializeFrame(buffer: Uint8Array): Frame {
   let offset = 0;
-  const streamId = buffer.readInt32BE(offset);
+  const streamId = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   // invariant(
   //   streamId >= 0,
   //   'RSocketBinaryFraming: Invalid frame, expected a positive stream id, got `%s.',
   //   streamId,
   // );
-  const typeAndFlags = buffer.readUInt16BE(offset);
+  const typeAndFlags = Bytes.readUInt16BE(buffer, offset);
   offset += 2;
   const type = typeAndFlags >>> FRAME_TYPE_OFFSET; // keep highest 6 bits
   const flags = typeAndFlags & FLAGS_MASK; // keep lowest 10 bits
@@ -224,7 +185,7 @@ export function deserializeFrame(buffer: Buffer): Frame {
 /**
  * Convert the frame to a (binary) buffer.
  */
-export function serializeFrame(frame: Frame): Buffer {
+export function serializeFrame(frame: Frame): Uint8Array {
   switch (frame.type) {
     case FrameTypes.SETUP:
       return serializeSetupFrame(frame);
@@ -309,17 +270,17 @@ export function sizeOfFrame(frame: Frame): number {
  */
 const EXT_FIXED_SIZE = 4;
 
-function serializeExtFrame(frame: ExtFrame): Buffer {
+function serializeExtFrame(frame: ExtFrame): Uint8Array {
   const contentLength = frame.extendedContent
     ? frame.extendedContent.byteLength
     : 0;
-  const buffer = Buffer.allocUnsafe(
+  const buffer = Bytes.alloc(
     FRAME_HEADER_SIZE + EXT_FIXED_SIZE + contentLength
   );
   let offset = writeHeader(frame, buffer);
-  offset = buffer.writeInt32BE(frame.extendedType, offset);
+  offset = Bytes.writeInt32BE(buffer, frame.extendedType, offset);
   if (frame.extendedContent) {
-    frame.extendedContent.copy(buffer, offset);
+    Bytes.copy(frame.extendedContent, buffer, offset);
   }
   return buffer;
 }
@@ -335,15 +296,15 @@ function sizeOfExtFrame(frame: ExtFrame): number {
  * Reads an EXT frame from the buffer and returns it.
  */
 function deserializeExtFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): ExtFrame {
   let offset = FRAME_HEADER_SIZE;
-  const extendedType = buffer.readInt32BE(offset);
+  const extendedType = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   const extendedContent =
-    offset < buffer.length ? buffer.slice(offset, buffer.length) : undefined;
+    offset < buffer.length ? buffer.subarray(offset, buffer.length) : undefined;
   return {
     type: FrameTypes.EXT,
     flags,
@@ -365,19 +326,17 @@ function deserializeExtFrame(
 const SETUP_FIXED_SIZE = 14;
 const RESUME_TOKEN_LENGTH_SIZE = 2;
 
-function serializeSetupFrame(frame: SetupFrame): Buffer {
+function serializeSetupFrame(frame: SetupFrame): Uint8Array {
   const resumeTokenLength =
     frame.resumeToken != null ? frame.resumeToken.byteLength : 0;
   const metadataMimeTypeLength =
     frame.metadataMimeType != null
-      ? Buffer.byteLength(frame.metadataMimeType, "ascii")
+      ? Bytes.asciiLength(frame.metadataMimeType)
       : 0;
   const dataMimeTypeLength =
-    frame.dataMimeType != null
-      ? Buffer.byteLength(frame.dataMimeType, "ascii")
-      : 0;
+    frame.dataMimeType != null ? Bytes.asciiLength(frame.dataMimeType) : 0;
   const payloadLength = getPayloadLength(frame);
-  const buffer = Buffer.allocUnsafe(
+  const buffer = Bytes.alloc(
     FRAME_HEADER_SIZE +
       SETUP_FIXED_SIZE + //
       (resumeTokenLength ? RESUME_TOKEN_LENGTH_SIZE + resumeTokenLength : 0) +
@@ -386,36 +345,26 @@ function serializeSetupFrame(frame: SetupFrame): Buffer {
       payloadLength
   );
   let offset = writeHeader(frame, buffer);
-  offset = buffer.writeUInt16BE(frame.majorVersion, offset);
-  offset = buffer.writeUInt16BE(frame.minorVersion, offset);
-  offset = buffer.writeUInt32BE(frame.keepAlive, offset);
-  offset = buffer.writeUInt32BE(frame.lifetime, offset);
+  offset = Bytes.writeUInt16BE(buffer, frame.majorVersion, offset);
+  offset = Bytes.writeUInt16BE(buffer, frame.minorVersion, offset);
+  offset = Bytes.writeUInt32BE(buffer, frame.keepAlive, offset);
+  offset = Bytes.writeUInt32BE(buffer, frame.lifetime, offset);
 
   if (frame.flags & Flags.RESUME_ENABLE) {
-    offset = buffer.writeUInt16BE(resumeTokenLength, offset);
+    offset = Bytes.writeUInt16BE(buffer, resumeTokenLength, offset);
     if (frame.resumeToken != null) {
-      offset += frame.resumeToken.copy(buffer, offset);
+      offset = Bytes.copy(frame.resumeToken, buffer, offset);
     }
   }
 
-  offset = buffer.writeUInt8(metadataMimeTypeLength, offset);
+  offset = Bytes.writeUInt8(buffer, metadataMimeTypeLength, offset);
   if (frame.metadataMimeType != null) {
-    offset += buffer.write(
-      frame.metadataMimeType,
-      offset,
-      offset + metadataMimeTypeLength,
-      "ascii"
-    );
+    offset = Bytes.writeAscii(buffer, frame.metadataMimeType, offset);
   }
 
-  offset = buffer.writeUInt8(dataMimeTypeLength, offset);
+  offset = Bytes.writeUInt8(buffer, dataMimeTypeLength, offset);
   if (frame.dataMimeType != null) {
-    offset += buffer.write(
-      frame.dataMimeType,
-      offset,
-      offset + dataMimeTypeLength,
-      "ascii"
-    );
+    offset = Bytes.writeAscii(buffer, frame.dataMimeType, offset);
   }
 
   writePayload(frame, buffer, offset);
@@ -427,12 +376,10 @@ function sizeOfSetupFrame(frame: SetupFrame): number {
     frame.resumeToken != null ? frame.resumeToken.byteLength : 0;
   const metadataMimeTypeLength =
     frame.metadataMimeType != null
-      ? Buffer.byteLength(frame.metadataMimeType, "ascii")
+      ? Bytes.asciiLength(frame.metadataMimeType)
       : 0;
   const dataMimeTypeLength =
-    frame.dataMimeType != null
-      ? Buffer.byteLength(frame.dataMimeType, "ascii")
-      : 0;
+    frame.dataMimeType != null ? Bytes.asciiLength(frame.dataMimeType) : 0;
   const payloadLength = getPayloadLength(frame);
   return (
     FRAME_HEADER_SIZE +
@@ -448,7 +395,7 @@ function sizeOfSetupFrame(frame: SetupFrame): number {
  * Reads a SETUP frame from the buffer and returns it.
  */
 function deserializeSetupFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): SetupFrame {
@@ -458,12 +405,12 @@ function deserializeSetupFrame(
   // );
   const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const majorVersion = buffer.readUInt16BE(offset);
+  const majorVersion = Bytes.readUInt16BE(buffer, offset);
   offset += 2;
-  const minorVersion = buffer.readUInt16BE(offset);
+  const minorVersion = Bytes.readUInt16BE(buffer, offset);
   offset += 2;
 
-  const keepAlive = buffer.readInt32BE(offset);
+  const keepAlive = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   // invariant(
   //   keepAlive >= 0 && keepAlive <= MAX_KEEPALIVE,
@@ -473,7 +420,7 @@ function deserializeSetupFrame(
   //   keepAlive,
   // );
 
-  const lifetime = buffer.readInt32BE(offset);
+  const lifetime = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   // invariant(
   //   lifetime >= 0 && lifetime <= MAX_LIFETIME,
@@ -485,7 +432,7 @@ function deserializeSetupFrame(
 
   let resumeToken = null;
   if (flags & Flags.RESUME_ENABLE) {
-    const resumeTokenLength = buffer.readInt16BE(offset);
+    const resumeTokenLength = Bytes.readInt16BE(buffer, offset);
     offset += 2;
     // invariant(
     //   resumeTokenLength >= 0 && resumeTokenLength <= MAX_RESUME_LENGTH,
@@ -494,23 +441,23 @@ function deserializeSetupFrame(
     //   MAX_RESUME_LENGTH,
     //   resumeTokenLength,
     // );
-    resumeToken = buffer.slice(offset, offset + resumeTokenLength);
+    resumeToken = buffer.subarray(offset, offset + resumeTokenLength);
     offset += resumeTokenLength;
   }
 
-  const metadataMimeTypeLength = buffer.readUInt8(offset);
+  const metadataMimeTypeLength = Bytes.readUInt8(buffer, offset);
   offset += 1;
-  const metadataMimeType = buffer.toString(
-    "ascii",
+  const metadataMimeType = Bytes.readAscii(
+    buffer,
     offset,
     offset + metadataMimeTypeLength
   );
   offset += metadataMimeTypeLength;
 
-  const dataMimeTypeLength = buffer.readUInt8(offset);
+  const dataMimeTypeLength = Bytes.readUInt8(buffer, offset);
   offset += 1;
-  const dataMimeType = buffer.toString(
-    "ascii",
+  const dataMimeType = Bytes.readAscii(
+    buffer,
     offset,
     offset + dataMimeTypeLength
   );
@@ -542,23 +489,23 @@ function deserializeSetupFrame(
  */
 const ERROR_FIXED_SIZE = 4;
 
-function serializeErrorFrame(frame: ErrorFrame): Buffer {
+function serializeErrorFrame(frame: ErrorFrame): Uint8Array {
   const messageLength =
-    frame.message != null ? Buffer.byteLength(frame.message, "utf8") : 0;
-  const buffer = Buffer.allocUnsafe(
+    frame.message != null ? Bytes.utf8Length(frame.message) : 0;
+  const buffer = Bytes.alloc(
     FRAME_HEADER_SIZE + ERROR_FIXED_SIZE + messageLength
   );
   let offset = writeHeader(frame, buffer);
-  offset = buffer.writeUInt32BE(frame.code, offset);
+  offset = Bytes.writeUInt32BE(buffer, frame.code, offset);
   if (frame.message != null) {
-    buffer.write(frame.message, offset, offset + messageLength, "utf8");
+    Bytes.writeUtf8(buffer, frame.message, offset);
   }
   return buffer;
 }
 
 function sizeOfErrorFrame(frame: ErrorFrame): number {
   const messageLength =
-    frame.message != null ? Buffer.byteLength(frame.message, "utf8") : 0;
+    frame.message != null ? Bytes.utf8Length(frame.message) : 0;
   return FRAME_HEADER_SIZE + ERROR_FIXED_SIZE + messageLength;
 }
 
@@ -566,13 +513,13 @@ function sizeOfErrorFrame(frame: ErrorFrame): number {
  * Reads an ERROR frame from the buffer and returns it.
  */
 function deserializeErrorFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): ErrorFrame {
   const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const code = buffer.readInt32BE(offset);
+  const code = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   // invariant(
   //   code >= 0 && code <= MAX_CODE,
@@ -583,7 +530,7 @@ function deserializeErrorFrame(
   const messageLength = buffer.length - offset;
   let message = "";
   if (messageLength > 0) {
-    message = buffer.toString("utf8", offset, offset + messageLength);
+    message = Bytes.readUtf8(buffer, offset, offset + messageLength);
     offset += messageLength;
   }
 
@@ -603,15 +550,15 @@ function deserializeErrorFrame(
  */
 const KEEPALIVE_FIXED_SIZE = 8;
 
-function serializeKeepAliveFrame(frame: KeepAliveFrame): Buffer {
+function serializeKeepAliveFrame(frame: KeepAliveFrame): Uint8Array {
   const dataLength = frame.data != null ? frame.data.byteLength : 0;
-  const buffer = Buffer.allocUnsafe(
+  const buffer = Bytes.alloc(
     FRAME_HEADER_SIZE + KEEPALIVE_FIXED_SIZE + dataLength
   );
   let offset = writeHeader(frame, buffer);
-  offset = writeUInt64BE(buffer, frame.lastReceivedPosition, offset);
+  offset = Bytes.writeUInt64BE(buffer, frame.lastReceivedPosition, offset);
   if (frame.data != null) {
-    frame.data.copy(buffer, offset);
+    Bytes.copy(frame.data, buffer, offset);
   }
   return buffer;
 }
@@ -625,7 +572,7 @@ function sizeOfKeepAliveFrame(frame: KeepAliveFrame): number {
  * Reads a KEEPALIVE frame from the buffer and returns it.
  */
 function deserializeKeepAliveFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): KeepAliveFrame {
@@ -635,11 +582,11 @@ function deserializeKeepAliveFrame(
   // );
   const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const lastReceivedPosition = readUInt64BE(buffer, offset);
+  const lastReceivedPosition = Bytes.readUInt64BE(buffer, offset);
   offset += 8;
   let data = null;
   if (offset < buffer.length) {
-    data = buffer.slice(offset, buffer.length);
+    data = buffer.subarray(offset, buffer.length);
   }
 
   return {
@@ -659,16 +606,14 @@ function deserializeKeepAliveFrame(
  */
 const LEASE_FIXED_SIZE = 8;
 
-function serializeLeaseFrame(frame: LeaseFrame): Buffer {
+function serializeLeaseFrame(frame: LeaseFrame): Uint8Array {
   const metaLength = frame.metadata != null ? frame.metadata.byteLength : 0;
-  const buffer = Buffer.allocUnsafe(
-    FRAME_HEADER_SIZE + LEASE_FIXED_SIZE + metaLength
-  );
+  const buffer = Bytes.alloc(FRAME_HEADER_SIZE + LEASE_FIXED_SIZE + metaLength);
   let offset = writeHeader(frame, buffer);
-  offset = buffer.writeUInt32BE(frame.ttl, offset);
-  offset = buffer.writeUInt32BE(frame.requestCount, offset);
+  offset = Bytes.writeUInt32BE(buffer, frame.ttl, offset);
+  offset = Bytes.writeUInt32BE(buffer, frame.requestCount, offset);
   if (frame.metadata != null) {
-    frame.metadata.copy(buffer, offset);
+    Bytes.copy(frame.metadata, buffer, offset);
   }
   return buffer;
 }
@@ -682,7 +627,7 @@ function sizeOfLeaseFrame(frame: LeaseFrame): number {
  * Reads a LEASE frame from the buffer and returns it.
  */
 function deserializeLeaseFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): LeaseFrame {
@@ -692,13 +637,13 @@ function deserializeLeaseFrame(
   // );
   // const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const ttl = buffer.readUInt32BE(offset);
+  const ttl = Bytes.readUInt32BE(buffer, offset);
   offset += 4;
-  const requestCount = buffer.readUInt32BE(offset);
+  const requestCount = Bytes.readUInt32BE(buffer, offset);
   offset += 4;
   let metadata = null;
   if (offset < buffer.length) {
-    metadata = buffer.slice(offset, buffer.length);
+    metadata = buffer.subarray(offset, buffer.length);
   }
   return {
     flags,
@@ -719,9 +664,9 @@ function deserializeLeaseFrame(
  */
 function serializeRequestFrame(
   frame: RequestFnfFrame | RequestResponseFrame
-): Buffer {
+): Uint8Array {
   const payloadLength = getPayloadLength(frame);
-  const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE + payloadLength);
+  const buffer = Bytes.alloc(FRAME_HEADER_SIZE + payloadLength);
   const offset = writeHeader(frame, buffer);
   writePayload(frame, buffer, offset);
   return buffer;
@@ -738,15 +683,15 @@ function sizeOfRequestFrame(
  * Writes a METADATA_PUSH frame to a new buffer and returns
  * it.
  */
-function serializeMetadataPushFrame(frame: MetadataPushFrame): Buffer {
+function serializeMetadataPushFrame(frame: MetadataPushFrame): Uint8Array {
   const metadata = frame.metadata;
   if (metadata != null) {
-    const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE + metadata.byteLength);
+    const buffer = Bytes.alloc(FRAME_HEADER_SIZE + metadata.byteLength);
     const offset = writeHeader(frame, buffer);
-    metadata.copy(buffer, offset);
+    Bytes.copy(metadata, buffer, offset);
     return buffer;
   } else {
-    const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE);
+    const buffer = Bytes.alloc(FRAME_HEADER_SIZE);
     writeHeader(frame, buffer);
     return buffer;
   }
@@ -759,7 +704,7 @@ function sizeOfMetadataPushFrame(frame: MetadataPushFrame): number {
 }
 
 function deserializeRequestFnfFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): RequestFnfFrame {
@@ -781,7 +726,7 @@ function deserializeRequestFnfFrame(
 }
 
 function deserializeRequestResponseFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): RequestResponseFrame {
@@ -803,7 +748,7 @@ function deserializeRequestResponseFrame(
 }
 
 function deserializeMetadataPushFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): MetadataPushFrame {
@@ -817,7 +762,7 @@ function deserializeMetadataPushFrame(
     metadata:
       length === FRAME_HEADER_SIZE
         ? null
-        : buffer.slice(FRAME_HEADER_SIZE, length),
+        : buffer.subarray(FRAME_HEADER_SIZE, length),
     // streamId,
     streamId: 0,
     type: FrameTypes.METADATA_PUSH,
@@ -836,13 +781,13 @@ const REQUEST_MANY_HEADER = 4;
 
 function serializeRequestManyFrame(
   frame: RequestStreamFrame | RequestChannelFrame
-): Buffer {
+): Uint8Array {
   const payloadLength = getPayloadLength(frame);
-  const buffer = Buffer.allocUnsafe(
+  const buffer = Bytes.alloc(
     FRAME_HEADER_SIZE + REQUEST_MANY_HEADER + payloadLength
   );
   let offset = writeHeader(frame, buffer);
-  offset = buffer.writeUInt32BE(frame.requestN, offset);
+  offset = Bytes.writeUInt32BE(buffer, frame.requestN, offset);
   writePayload(frame, buffer, offset);
   return buffer;
 }
@@ -855,7 +800,7 @@ function sizeOfRequestManyFrame(
 }
 
 function deserializeRequestStreamFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): RequestStreamFrame {
@@ -865,7 +810,7 @@ function deserializeRequestStreamFrame(
   // );
   const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const requestN = buffer.readInt32BE(offset);
+  const requestN = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   // invariant(
   //   requestN > 0,
@@ -886,7 +831,7 @@ function deserializeRequestStreamFrame(
 }
 
 function deserializeRequestChannelFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): RequestChannelFrame {
@@ -896,7 +841,7 @@ function deserializeRequestChannelFrame(
   // );
   const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const requestN = buffer.readInt32BE(offset);
+  const requestN = Bytes.readInt32BE(buffer, offset);
   offset += 4;
   // invariant(
   //   requestN > 0,
@@ -923,10 +868,10 @@ function deserializeRequestChannelFrame(
  */
 const REQUEST_N_HEADER = 4;
 
-function serializeRequestNFrame(frame: RequestNFrame): Buffer {
-  const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE + REQUEST_N_HEADER);
+function serializeRequestNFrame(frame: RequestNFrame): Uint8Array {
+  const buffer = Bytes.alloc(FRAME_HEADER_SIZE + REQUEST_N_HEADER);
   const offset = writeHeader(frame, buffer);
-  buffer.writeUInt32BE(frame.requestN, offset);
+  Bytes.writeUInt32BE(buffer, frame.requestN, offset);
   return buffer;
 }
 
@@ -935,7 +880,7 @@ function sizeOfRequestNFrame(frame: RequestNFrame): number {
 }
 
 function deserializeRequestNFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): RequestNFrame {
@@ -944,7 +889,7 @@ function deserializeRequestNFrame(
   //   "RSocketBinaryFraming: Invalid REQUEST_N frame, expected stream id to be > 0."
   // );
   const length = buffer.length;
-  const requestN = buffer.readInt32BE(FRAME_HEADER_SIZE);
+  const requestN = Bytes.readInt32BE(buffer, FRAME_HEADER_SIZE);
   // invariant(
   //   requestN > 0,
   //   "RSocketBinaryFraming: Invalid REQUEST_STREAM frame, expected requestN to be > 0, got `%s`.",
@@ -962,8 +907,8 @@ function deserializeRequestNFrame(
 /**
  * Writes a CANCEL frame to a new buffer and returns it.
  */
-function serializeCancelFrame(frame: CancelFrame): Buffer {
-  const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE);
+function serializeCancelFrame(frame: CancelFrame): Uint8Array {
+  const buffer = Bytes.alloc(FRAME_HEADER_SIZE);
   writeHeader(frame, buffer);
   return buffer;
 }
@@ -973,7 +918,7 @@ function sizeOfCancelFrame(frame: CancelFrame): number {
 }
 
 function deserializeCancelFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): CancelFrame {
@@ -993,9 +938,9 @@ function deserializeCancelFrame(
 /**
  * Writes a PAYLOAD frame to a new buffer and returns it.
  */
-function serializePayloadFrame(frame: PayloadFrame): Buffer {
+function serializePayloadFrame(frame: PayloadFrame): Uint8Array {
   const payloadLength = getPayloadLength(frame);
-  const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE + payloadLength);
+  const buffer = Bytes.alloc(FRAME_HEADER_SIZE + payloadLength);
   const offset = writeHeader(frame, buffer);
   writePayload(frame, buffer, offset);
   return buffer;
@@ -1007,7 +952,7 @@ function sizeOfPayloadFrame(frame: PayloadFrame): number {
 }
 
 function deserializePayloadFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): PayloadFrame {
@@ -1040,18 +985,18 @@ function deserializePayloadFrame(
  */
 const RESUME_FIXED_SIZE = 22;
 
-function serializeResumeFrame(frame: ResumeFrame): Buffer {
+function serializeResumeFrame(frame: ResumeFrame): Uint8Array {
   const resumeTokenLength = frame.resumeToken.byteLength;
-  const buffer = Buffer.allocUnsafe(
+  const buffer = Bytes.alloc(
     FRAME_HEADER_SIZE + RESUME_FIXED_SIZE + resumeTokenLength
   );
   let offset = writeHeader(frame, buffer);
-  offset = buffer.writeUInt16BE(frame.majorVersion, offset);
-  offset = buffer.writeUInt16BE(frame.minorVersion, offset);
-  offset = buffer.writeUInt16BE(resumeTokenLength, offset);
-  offset += frame.resumeToken.copy(buffer, offset);
-  offset = writeUInt64BE(buffer, frame.serverPosition, offset);
-  writeUInt64BE(buffer, frame.clientPosition, offset);
+  offset = Bytes.writeUInt16BE(buffer, frame.majorVersion, offset);
+  offset = Bytes.writeUInt16BE(buffer, frame.minorVersion, offset);
+  offset = Bytes.writeUInt16BE(buffer, resumeTokenLength, offset);
+  offset = Bytes.copy(frame.resumeToken, buffer, offset);
+  offset = Bytes.writeUInt64BE(buffer, frame.serverPosition, offset);
+  Bytes.writeUInt64BE(buffer, frame.clientPosition, offset);
   return buffer;
 }
 
@@ -1061,7 +1006,7 @@ function sizeOfResumeFrame(frame: ResumeFrame): number {
 }
 
 function deserializeResumeFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): ResumeFrame {
@@ -1071,12 +1016,12 @@ function deserializeResumeFrame(
   // );
   const length = buffer.length;
   let offset = FRAME_HEADER_SIZE;
-  const majorVersion = buffer.readUInt16BE(offset);
+  const majorVersion = Bytes.readUInt16BE(buffer, offset);
   offset += 2;
-  const minorVersion = buffer.readUInt16BE(offset);
+  const minorVersion = Bytes.readUInt16BE(buffer, offset);
   offset += 2;
 
-  const resumeTokenLength = buffer.readInt16BE(offset);
+  const resumeTokenLength = Bytes.readInt16BE(buffer, offset);
   offset += 2;
   // invariant(
   //   resumeTokenLength >= 0 && resumeTokenLength <= MAX_RESUME_LENGTH,
@@ -1085,11 +1030,11 @@ function deserializeResumeFrame(
   //   MAX_RESUME_LENGTH,
   //   resumeTokenLength
   // );
-  const resumeToken = buffer.slice(offset, offset + resumeTokenLength);
+  const resumeToken = buffer.subarray(offset, offset + resumeTokenLength);
   offset += resumeTokenLength;
-  const serverPosition = readUInt64BE(buffer, offset);
+  const serverPosition = Bytes.readUInt64BE(buffer, offset);
   offset += 8;
-  const clientPosition = readUInt64BE(buffer, offset);
+  const clientPosition = Bytes.readUInt64BE(buffer, offset);
   offset += 8;
   return {
     clientPosition,
@@ -1113,10 +1058,10 @@ function deserializeResumeFrame(
  */
 const RESUME_OK_FIXED_SIZE = 8;
 
-function serializeResumeOkFrame(frame: ResumeOkFrame): Buffer {
-  const buffer = Buffer.allocUnsafe(FRAME_HEADER_SIZE + RESUME_OK_FIXED_SIZE);
+function serializeResumeOkFrame(frame: ResumeOkFrame): Uint8Array {
+  const buffer = Bytes.alloc(FRAME_HEADER_SIZE + RESUME_OK_FIXED_SIZE);
   const offset = writeHeader(frame, buffer);
-  writeUInt64BE(buffer, frame.clientPosition, offset);
+  Bytes.writeUInt64BE(buffer, frame.clientPosition, offset);
   return buffer;
 }
 
@@ -1125,7 +1070,7 @@ function sizeOfResumeOkFrame(frame: ResumeOkFrame): number {
 }
 
 function deserializeResumeOkFrame(
-  buffer: Buffer,
+  buffer: Uint8Array,
   streamId: number,
   flags: number
 ): ResumeOkFrame {
@@ -1134,7 +1079,7 @@ function deserializeResumeOkFrame(
   //   "RSocketBinaryFraming: Invalid RESUME frame, expected stream id to be 0."
   // );
   const length = buffer.length;
-  const clientPosition = readUInt64BE(buffer, FRAME_HEADER_SIZE);
+  const clientPosition = Bytes.readUInt64BE(buffer, FRAME_HEADER_SIZE);
   return {
     clientPosition,
     flags,
@@ -1148,10 +1093,11 @@ function deserializeResumeOkFrame(
 /**
  * Write the header of the frame into the buffer.
  */
-function writeHeader(frame: Frame, buffer: Buffer): number {
-  const offset = buffer.writeInt32BE(frame.streamId, 0);
+function writeHeader(frame: Frame, buffer: Uint8Array): number {
+  const offset = Bytes.writeInt32BE(buffer, frame.streamId, 0);
   // shift frame to high 6 bits, extract lowest 10 bits from flags
-  return buffer.writeUInt16BE(
+  return Bytes.writeUInt16BE(
+    buffer,
     (frame.type << FRAME_TYPE_OFFSET) | (frame.flags & FLAGS_MASK),
     offset
   );
@@ -1181,20 +1127,20 @@ function getPayloadLength(frame: FrameWithPayload): number {
  */
 function writePayload(
   frame: FrameWithPayload,
-  buffer: Buffer,
+  buffer: Uint8Array,
   offset: number
 ): void {
   if (Flags.hasMetadata(frame.flags)) {
     if (frame.metadata != null) {
       const metaLength = frame.metadata.byteLength;
-      offset = writeUInt24BE(buffer, metaLength, offset);
-      offset += frame.metadata.copy(buffer, offset);
+      offset = Bytes.writeUInt24BE(buffer, metaLength, offset);
+      offset = Bytes.copy(frame.metadata, buffer, offset);
     } else {
-      offset = writeUInt24BE(buffer, 0, offset);
+      offset = Bytes.writeUInt24BE(buffer, 0, offset);
     }
   }
   if (frame.data != null) {
-    frame.data.copy(buffer, offset);
+    Bytes.copy(frame.data, buffer, offset);
   }
 }
 
@@ -1203,20 +1149,20 @@ function writePayload(
  * frame types that MAY have both metadata and data.
  */
 function readPayload(
-  buffer: Buffer,
+  buffer: Uint8Array,
   frame: FrameWithPayload,
   offset: number
 ): void {
   if (Flags.hasMetadata(frame.flags)) {
-    const metaLength = readUInt24BE(buffer, offset);
+    const metaLength = Bytes.readUInt24BE(buffer, offset);
     offset += UINT24_SIZE;
     if (metaLength > 0) {
-      frame.metadata = buffer.slice(offset, offset + metaLength);
+      frame.metadata = buffer.subarray(offset, offset + metaLength);
       offset += metaLength;
     }
   }
   if (offset < buffer.length) {
-    frame.data = buffer.slice(offset, buffer.length);
+    frame.data = buffer.subarray(offset, buffer.length);
   }
 }
 
@@ -1225,14 +1171,14 @@ export class Deserializer {
   /**
    * Read a frame from the buffer.
    */
-  deserializeFrame(buffer: Buffer): Frame {
+  deserializeFrame(buffer: Uint8Array): Frame {
     return deserializeFrame(buffer);
   }
 
   /**
    * Reads a frame from a buffer that is prefixed with the frame length.
    */
-  deserializeFrameWithLength(buffer: Buffer): Frame {
+  deserializeFrameWithLength(buffer: Uint8Array): Frame {
     return deserializeFrameWithLength(buffer);
   }
 
@@ -1241,7 +1187,7 @@ export class Deserializer {
    * by zero or more bytes of a (partial) subsequent frame, returns an array of
    * the frames and a int representing the buffer offset.
    */
-  deserializeFrames(buffer: Buffer): Generator<[Frame, number]> {
+  deserializeFrames(buffer: Uint8Array): Generator<[Frame, number]> {
     return deserializeFrames(buffer);
   }
 }

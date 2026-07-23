@@ -206,7 +206,8 @@ describe("TcpDuplexConnection", function () {
       connection.send(setupFrame);
 
       // assert
-      expect(socketStub.write).toHaveBeenCalledWith(expect.any(Buffer));
+      // frames are serialized to plain Uint8Array now (Buffer is a subclass)
+      expect(socketStub.write).toHaveBeenCalledWith(expect.any(Uint8Array));
     });
 
     it("does not write the given frame to the underlying socket when close was previously called", async () => {

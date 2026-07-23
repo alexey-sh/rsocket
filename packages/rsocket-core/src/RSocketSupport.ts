@@ -15,6 +15,7 @@
  */
 
 import { ErrorCodes, RSocketError } from "./Errors";
+import * as Bytes from "./Bytes";
 import {
   ErrorFrame,
   Flags,
@@ -173,7 +174,10 @@ export class RSocketRequester implements RSocket {
     return handler;
   }
 
-  metadataPush(metadata: Buffer, responderStream: OnTerminalSubscriber): void {
+  metadataPush(
+    metadata: Uint8Array,
+    responderStream: OnTerminalSubscriber
+  ): void {
     this.connection.multiplexerDemultiplexer.connectionOutbound.send({
       type: FrameTypes.METADATA_PUSH,
       streamId: 0,
@@ -379,7 +383,7 @@ export class DefaultConnectionFrameHandler implements ConnectionFrameHandler {
         return;
       case FrameTypes.METADATA_PUSH:
         if (this.rsocket.metadataPush) {
-          this.rsocket.metadataPush(frame.metadata ?? Buffer.allocUnsafe(0), {
+          this.rsocket.metadataPush(frame.metadata ?? Bytes.alloc(0), {
             onError: () => {},
             onComplete: () => {},
           });
