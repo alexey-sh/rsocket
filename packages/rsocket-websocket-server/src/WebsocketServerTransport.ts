@@ -25,10 +25,10 @@ import {
   Outbound,
   ServerTransport,
 } from "rsocket-core";
-import WebSocket from "ws";
+import { WebSocket, WebSocketServer, createWebSocketStream } from "ws";
 import { WebsocketDuplexConnection } from "./WebsocketDuplexConnection";
 
-export type SocketFactory = (options: SocketOptions) => WebSocket.Server;
+export type SocketFactory = (options: SocketOptions) => WebSocketServer;
 
 export type SocketOptions = {
   host?: string;
@@ -41,7 +41,7 @@ export type ServerOptions = SocketOptions & {
 };
 
 const defaultFactory: SocketFactory = (options: SocketOptions) => {
-  return new WebSocket.Server({
+  return new WebSocketServer({
     host: options.host,
     port: options.port,
   });
@@ -68,12 +68,12 @@ export class WebsocketServerTransport implements ServerTransport {
       outbound: Outbound & Closeable
     ) => Multiplexer & Demultiplexer & FrameHandler
   ): Promise<Closeable> {
-    const websocketServer: WebSocket.Server = await this.connectServer();
+    const websocketServer: WebSocketServer = await this.connectServer();
     const serverCloseable = new ServerCloseable(websocketServer);
 
     const connectionListener = (websocket: WebSocket) => {
       websocket.binaryType = "nodebuffer";
-      const duplex = WebSocket.createWebSocketStream(websocket);
+      const duplex = createWebSocketStream(websocket);
       WebsocketDuplexConnection.create(
         duplex,
         connectionAcceptor,
@@ -92,7 +92,7 @@ export class WebsocketServerTransport implements ServerTransport {
     return serverCloseable;
   }
 
-  private connectServer(): Promise<WebSocket.Server> {
+  private connectServer(): Promise<WebSocketServer> {
     return new Promise((resolve, reject) => {
       const websocketServer = this.factory({
         host: this.host,
@@ -111,7 +111,7 @@ export class WebsocketServerTransport implements ServerTransport {
 }
 
 class ServerCloseable extends Deferred {
-  constructor(private readonly server: WebSocket.Server) {
+  constructor(private readonly server: WebSocketServer) {
     super();
   }
 
