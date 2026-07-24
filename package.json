@@ -16,9 +16,11 @@
     "pretest": "yarn clean",
     "test": "lerna run test",
     "lint": "eslint .",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "check:exports": "yarn build && for p in core composite-metadata messaging adapter-rxjs tcp-client tcp-server websocket-client websocket-server graphql-apollo-link graphql-apollo-server; do attw --pack \"packages/rsocket-$p\" || exit 1; done"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@types/sinon": "^22.0.0",
