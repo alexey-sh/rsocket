@@ -1,6 +1,9 @@
-# [rsocket-js](https://github.com/rsocket/rsocket-js)
+# rsocket-js — [alexey-sh fork](https://github.com/alexey-sh/rsocket)
 
-[![Build](https://github.com/rsocket/rsocket-js/actions/workflows/build.yml/badge.svg?branch=1.0.x)](https://github.com/rsocket/rsocket-js/actions/workflows/build.yml)
+> **This is an independent fork** of [`rsocket/rsocket-js`](https://github.com/rsocket/rsocket-js),
+> continuing the stalled Flow → TypeScript 1.0 rewrite. **See [FORK.md](./FORK.md) for exactly how
+> it differs from upstream** (Node 24, strict TypeScript 6, `Uint8Array` API, dual ESM+CJS, and
+> ~15 protocol fixes).
 
 A JavaScript implementation of the [RSocket](https://github.com/rsocket/rsocket)
 protocol intended for use in browsers and/or Node.js. From [rsocket.io](http://rsocket.io/):
@@ -20,17 +23,24 @@ protocol intended for use in browsers and/or Node.js. From [rsocket.io](http://r
 
 ## Status
 
-This branch contains a rewrite (with significant changes) of rsocket-js from [Flow](https://flow.org/) to [TypeScript](https://www.typescriptlang.org/). Please see [#158](https://github.com/rsocket/rsocket-js/issues/158) for additional details.
+This fork continues the rewrite of rsocket-js from [Flow](https://flow.org/) to
+[TypeScript](https://www.typescriptlang.org/) (upstream context:
+[#158](https://github.com/rsocket/rsocket-js/issues/158)), and is developed **independently** of
+upstream — no pull requests are sent upstream and upstream releases are not tracked.
 
-The artifacts published from this branch are considered UNSTABLE and may be subject to breaking changes while in preview.
+Artifacts are **UNSTABLE** and subject to breaking changes while in preview. A full, side-by-side
+comparison with upstream lives in **[FORK.md](./FORK.md)**.
 
-**Please see the [master](https://github.com/rsocket/rsocket-js/tree/master) branch for sources related to `0.x.x` versions.**
+**For sources related to `0.x.x` versions, see the upstream [master](https://github.com/rsocket/rsocket-js/tree/master) branch.**
 
 ## Installation
 
 Individual packages published from this monorepo are distributed via NPM.
 
 Packages are independently versioned.
+
+> **Note:** the npm links below are the upstream package names (`rsocket-*`, owned upstream). This
+> fork is not yet published; it will ship under a new npm scope. For now, build from source.
 
 - [rsocket-core](https://www.npmjs.com/package/rsocket-core)
 - [rsocket-messaging](https://www.npmjs.com/package/rsocket-messaging)
@@ -49,7 +59,7 @@ TODO: add `CONTRIBUTING.md`
 
 ## Documentation & Examples
 
-See [packages/rsocket-examples](https://github.com/rsocket/rsocket-js/tree/1.0.x-alpha/packages/rsocket-examples/src) for examples.
+See [packages/rsocket-examples](./packages/rsocket-examples/src) for examples.
 
 Guides for `0.x.x` versions can be found on https://rsocket.io/guides/rsocket-js.
 

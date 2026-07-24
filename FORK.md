@@ -1,0 +1,76 @@
+# How this fork differs from upstream `rsocket-js`
+
+[`alexey-sh/rsocket`](https://github.com/alexey-sh/rsocket) is an **independent fork** of
+[`rsocket/rsocket-js`](https://github.com/rsocket/rsocket-js) that continues the stalled
+**Flow → TypeScript 1.0 rewrite** (upstream tracking issue
+[#158](https://github.com/rsocket/rsocket-js/issues/158)).
+
+We develop **independently**: we do not open pull requests against upstream and do not track
+upstream releases. Packages remain `1.0.0-alpha.*` and **UNSTABLE** — breaking changes are
+expected — and the library will eventually be published under a **new npm scope** (the bare
+`rsocket-*` names are owned upstream).
+
+Everything below is what changed relative to the upstream `1.0.x-alpha` branch this fork was
+started from.
+
+## At a glance
+
+- **Node 24** baseline (`engines: >=22`).
+- **TypeScript 6** with full **`strict`** across every package.
+- **Public binary type is `Uint8Array`**, not `Buffer` — browser-neutral; no `Buffer.*` call
+  remains in any package's source.
+- **Dual ESM + CJS** output with a proper `exports` map (was CJS-only).
+- Modern toolchain: **ESLint 9** flat config, **Prettier 3**, **jest 30**, **lerna 9**,
+  **Apollo Server v5 / Client v4**.
+- **~15 protocol / correctness fixes**, each with regression tests.
+
+## Platform, toolchain & build
+
+| Area          | Upstream `1.0.x-alpha`  | This fork                                      | How                                                                                                                                                |
+| ------------- | ----------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Node          | 14/16-era               | **24** (`engines: >=22`)                       | `.nvmrc` + per-package `engines`                                                                                                                   |
+| TypeScript    | ~4.x, non-strict        | **6.x, `strict: true`**                        | Rolled out flag-by-flag; target ES2022                                                                                                             |
+| Binary type   | `Buffer` (Node-only)    | **`Uint8Array`** (browser-neutral)             | New oracle-tested `Bytes.ts` byte-helpers in core, re-exported as `Bytes`; all packages migrated                                                   |
+| Module format | CJS only (`main`)       | **Dual ESM + CJS**                             | Build tool `tsc` → **tsup**; each package emits `index.{js,mjs,d.ts,d.mts}` + sourcemaps behind a package.json `exports` map + `sideEffects:false` |
+| Lint / format | ESLint 8 / Prettier 2   | **ESLint 9 flat config / Prettier 3**          | `eslint.config.js`; lint = Prettier-as-error                                                                                                       |
+| Test runner   | jest (older)            | **jest 30** + ts-jest; tests import **source** | `moduleNameMapper` maps `rsocket-*` → `packages/*/src`                                                                                             |
+| GraphQL       | Apollo Server v3        | **Apollo Server v5 / Client v4**               | Rewrote `graphql-apollo-server`/`-link` onto the new APIs                                                                                          |
+| `baseUrl`     | set (deprecated in TS6) | **removed**                                    | `paths` resolve without it since TS 5.4                                                                                                            |
+
+## Correctness & protocol fixes
+
+Each fix ships with a regression test.
+
+| Fix                                                              | How                                                                                                                                                                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Responder outbound payloads never fragmented (#306/#307)         | `DefaultStreamRequestHandler` was constructed with a hardcoded `fragmentSize 0`; now threads `maxOutboundFragmentSize ?? 0` like the requester                                                                     |
+| `REQUEST_N` with `requestN < 1` accepted (M1)                    | Reject at the 3 REQUEST_N consumption sites → terminate that **stream** (spec: MUST be >0; Reactive-Streams rule 3.9; signed int32 decode reads over-range values negative). Stream-scoped, not connection-killing |
+| `metadataPush` length crash (C1)                                 | Guard the metadata-length read in the metadata-push path                                                                                                                                                           |
+| RESUME major/minor version swap (C2)                             | Fixed transposed major/minor fields in the RESUME frame codec                                                                                                                                                      |
+| `isFragmentable` null-data crash (C3)                            | Null-guard payload data before the size check                                                                                                                                                                      |
+| tcp-server partial-first-frame DoS (C4)                          | Bound the buffering of an incomplete first frame                                                                                                                                                                   |
+| EXT frame codec + resume position (C5/M2)                        | Fixed EXT encode/decode; EXT now advances the resume position                                                                                                                                                      |
+| metadata-push end-to-end (H1/H2)                                 | Wired requester → responder metadata-push                                                                                                                                                                          |
+| channel deferred-error (H3)                                      | Deliver a deferred error correctly on the channel responder                                                                                                                                                        |
+| websocket-server duplex close/error (H4)                         | Proper close/error propagation on the ws-server duplex                                                                                                                                                             |
+| LeaseHandler pending-request hang (H5)                           | Release lease-gated pending requests instead of hanging                                                                                                                                                            |
+| metadata-flag consistency (M3), lenient stream-0 processing (M5) | Align METADATA flag handling; ignore stray/unknown stream-0 frames                                                                                                                                                 |
+| monotonic keepalive clock (#298)                                 | `performance.now()` instead of wall-clock                                                                                                                                                                          |
+| websocket-server `send()`/`create()` guards (#278)               | Guard against use-after-close                                                                                                                                                                                      |
+
+## Ecosystem / DX
+
+| Change                       | How                                                                                                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Bytes` byte-helpers exposed | `import { Bytes } from "rsocket-core"` — BE int read/write, utf8/ascii, `concat`/`alloc`, zero-copy `subarray`                                       |
+| Examples modernized          | `Buffer`→`Uint8Array`, ~59 `strict` errors cleared, `new WebSocket.Server` → `{ WebSocketServer }`, readable log output via a `bytesToUtf8()` helper |
+| Package encapsulation        | The `exports` map blocks deep `/src` imports — only the public entry is importable                                                                   |
+
+## Still planned
+
+- Validate the **initial** requestN in `REQUEST_STREAM`/`REQUEST_CHANNEL` (the M1 follow-up).
+- Lower-priority upstream deltas: keepalive IGNORE echo, deserializer streamId preservation,
+  external server close, `Deferred.onClose` removal, StreamId wraparound.
+- `no-restricted-globals` ESLint guard forbidding `Buffer` in `rsocket-core/src`.
+- `@arethetypeswrong/cli` validation of the dual `exports`/types.
+- Publish under a new npm scope.

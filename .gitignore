@@ -8,6 +8,9 @@ results
 *.tsbuildinfo
 coverage
 
+# Local Claude Code project config (agents, settings)
+.claude/
+
 # Created by https://www.toptal.com/developers/gitignore/api/intellij,yarn,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij,yarn,macos
 
