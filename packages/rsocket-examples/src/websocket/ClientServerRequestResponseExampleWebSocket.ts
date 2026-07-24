@@ -15,6 +15,7 @@
  */
 
 import {
+  Bytes,
   OnExtensionSubscriber,
   OnNextSubscriber,
   OnTerminalSubscriber,
@@ -22,16 +23,17 @@ import {
   RSocketConnector,
   RSocketServer,
 } from "rsocket-core";
+import { bytesToUtf8 } from "../shared/bytesToUtf8";
 import { WebsocketClientTransport } from "rsocket-websocket-client";
 import { WebsocketServerTransport } from "rsocket-websocket-server";
 import { exit } from "process";
-import WebSocket from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
 async function main() {
   const server = new RSocketServer({
     transport: new WebsocketServerTransport({
       wsCreator: (options) => {
-        return new WebSocket.Server({
+        return new WebSocketServer({
           port: 8080,
         });
       },
@@ -48,7 +50,10 @@ async function main() {
             () =>
               responderStream.onNext(
                 {
-                  data: Buffer.concat([Buffer.from("Echo: "), payload.data]),
+                  data: Bytes.concat([
+                    Bytes.fromUtf8("Echo: "),
+                    payload.data ?? Bytes.alloc(0),
+                  ]),
                 },
                 true
               ),
@@ -82,13 +87,13 @@ async function main() {
   await new Promise((resolve, reject) =>
     rsocket.requestResponse(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
       },
       {
         onError: (e) => reject(e),
         onNext: (payload, isComplete) => {
           console.log(
-            `payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
           resolve(payload);
         },

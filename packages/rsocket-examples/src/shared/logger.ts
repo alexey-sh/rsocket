@@ -15,19 +15,19 @@
  */
 
 export default class Logger {
-  static info(message, ...rest) {
+  static info(message?: unknown, ...rest: unknown[]) {
     const date = new Date()
       .toISOString()
       .replace(/T/, " ") // replace T with a space
       .replace(/\..+/, ""); // delete the dot and everything after;
-    return console.log(`[${date}] ${message}`, ...rest);
+    return console.log(`[${date}] ${String(message)}`, ...rest);
   }
 
-  static error(message, ...rest) {
+  static error(message?: unknown, ...rest: unknown[]) {
     const date = new Date()
       .toISOString()
       .replace(/T/, " ") // replace T with a space
       .replace(/\..+/, ""); // delete the dot and everything after;
-    return console.error(`[${date}] ${message}`, ...rest);
+    return console.error(`[${date}] ${String(message)}`, ...rest);
   }
 }

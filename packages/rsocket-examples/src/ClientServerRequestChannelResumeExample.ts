@@ -15,6 +15,7 @@
  */
 
 import {
+  Bytes,
   Cancellable,
   OnExtensionSubscriber,
   OnNextSubscriber,
@@ -25,6 +26,7 @@ import {
   RSocketConnector,
   RSocketServer,
 } from "rsocket-core";
+import { bytesToUtf8 } from "./shared/bytesToUtf8";
 import { exit } from "process";
 import { TcpClientTransport } from "rsocket-tcp-client";
 import { TcpServerTransport } from "rsocket-tcp-server";
@@ -91,7 +93,7 @@ async function main() {
       lifetime: 10000,
     },
     resume: {
-      tokenGenerator: () => Buffer.from("1"),
+      tokenGenerator: () => Bytes.fromUtf8("1"),
       reconnectFunction: (a) =>
         new Promise((r) => setTimeout(r, a * 100 + 100, 100)),
     },
@@ -109,10 +111,10 @@ async function main() {
     let sent = 1;
     let received = 0;
     let totalRequested = 0;
-    let interval;
+    let interval: ReturnType<typeof setInterval> | undefined;
     const requester = rsocket.requestChannel(
       {
-        data: Buffer.from("1"),
+        data: Bytes.fromUtf8("1"),
       },
       16,
       false,
@@ -120,7 +122,7 @@ async function main() {
         onError: (e) => reject(e),
         onNext: (payload, isComplete) => {
           console.log(
-            `payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
 
           received++;
@@ -150,7 +152,7 @@ async function main() {
               }
               requester.onNext(
                 {
-                  data: Buffer.from(`${sent}`),
+                  data: Bytes.fromUtf8(`${sent}`),
                 },
                 sent === 1000
               );

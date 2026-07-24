@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { RSocketConnector } from "rsocket-core";
+import { Bytes, RSocketConnector } from "rsocket-core";
+import { bytesToUtf8 } from "./shared/bytesToUtf8";
 import { WebsocketClientTransport } from "rsocket-websocket-client";
 import { exit } from "process";
 import WebSocket from "ws";
@@ -36,7 +37,7 @@ async function main() {
   await new Promise((resolve, reject) => {
     const requester = rsocket.requestChannel(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
       },
       1,
       false,
@@ -44,7 +45,7 @@ async function main() {
         onError: (e) => reject(e),
         onNext: (payload, isComplete) => {
           console.log(
-            `payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
 
           requester.request(1);
@@ -61,7 +62,7 @@ async function main() {
           console.log(`request(${n})`);
           requester.onNext(
             {
-              data: Buffer.from("Message"),
+              data: Bytes.fromUtf8("Message"),
             },
             true
           );

@@ -15,6 +15,7 @@
  */
 
 import {
+  Bytes,
   Closeable,
   ErrorCodes,
   OnExtensionSubscriber,
@@ -46,7 +47,10 @@ let serverCloseable: Closeable;
 // The SHA1 HASH of rsocket-js-2024-10
 const expectedExampleToken = "8a7d50f76ef86c75bd3563e55f8835515189dbff";
 
-const tokenToUserContext = {
+const tokenToUserContext: Record<
+  string,
+  { firstName: string; lastName: string }
+> = {
   [expectedExampleToken]: {
     firstName: "bob",
     lastName: "builder",
@@ -92,7 +96,10 @@ class EchoService {
     const timeout = setTimeout(() => {
       responderStream.onNext(
         {
-          data: Buffer.concat([Buffer.from("Echo: "), payload.data]),
+          data: Bytes.concat([
+            Bytes.fromUtf8("Echo: "),
+            payload.data ?? Bytes.alloc(0),
+          ]),
         },
         true
       );
@@ -114,7 +121,11 @@ class AuthService {
     const authContext = mappedMetaData.get(
       MESSAGE_RSOCKET_AUTHENTICATION.toString()
     );
-    const authToken = authContext.payload.toString();
+    const authToken = Bytes.readUtf8(
+      authContext.payload,
+      0,
+      authContext.payload.length
+    );
     return tokenToUserContext[authToken];
   }
 
@@ -138,7 +149,7 @@ class AuthService {
       }
       responderStream.onNext(
         {
-          data: Buffer.from(JSON.stringify(userContext)),
+          data: Bytes.fromUtf8(JSON.stringify(userContext)),
         },
         true
       );
@@ -169,7 +180,7 @@ function authMiddleware(mappedMetaData: Map<string, any>) {
       `Unsupported authentication type provided. Identifier=${auth.type.identifier}`
     );
   }
-  const token = auth.payload.toString();
+  const token = Bytes.readUtf8(auth.payload, 0, auth.payload.length);
   if (token !== expectedExampleToken) {
     return new RSocketError(
       ErrorCodes.REJECTED,

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { Payload, RSocket, RSocketConnector } from "rsocket-core";
+import { Bytes, Payload, RSocket, RSocketConnector } from "rsocket-core";
+import { bytesToUtf8 } from "../../shared/bytesToUtf8";
 import { TcpClientTransport } from "rsocket-tcp-client";
 import {
   encodeBearerAuthMetadata,
@@ -28,12 +29,12 @@ import MESSAGE_RSOCKET_ROUTING = WellKnownMimeType.MESSAGE_RSOCKET_ROUTING;
 import MESSAGE_RSOCKET_AUTHENTICATION = WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION;
 
 function makeMetadata(bearerToken?: string, route?: string) {
-  const map = new Map<WellKnownMimeType, Buffer>();
+  const map = new Map<WellKnownMimeType, Uint8Array>();
 
   if (bearerToken) {
     map.set(
       MESSAGE_RSOCKET_AUTHENTICATION,
-      encodeBearerAuthMetadata(Buffer.from(bearerToken))
+      encodeBearerAuthMetadata(Bytes.fromUtf8(bearerToken))
     );
   }
 
@@ -57,7 +58,7 @@ function makeConnector(token: string) {
     }),
     setup: {
       payload: {
-        data: Buffer.from([]),
+        data: Bytes.alloc(0),
         metadata: makeMetadata(token),
       },
     },
@@ -66,13 +67,13 @@ function makeConnector(token: string) {
 
 async function requestResponse(
   rsocket: RSocket,
-  compositeMetaData: Buffer,
+  compositeMetaData: Uint8Array,
   message: string = ""
 ): Promise<Payload> {
   return new Promise((resolve, reject) => {
     return rsocket.requestResponse(
       {
-        data: Buffer.from(message),
+        data: Bytes.fromUtf8(message),
         metadata: compositeMetaData,
       },
       {
@@ -81,7 +82,7 @@ async function requestResponse(
         },
         onNext: (payload, isComplete) => {
           Logger.info(
-            `onNext payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `onNext payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
           resolve(payload);
         },
@@ -118,16 +119,22 @@ async function main() {
   // this request SHOULD pass
   const echoResponse = await requestResponse(
     rsocket,
-    makeMetadata(null, "EchoService.echo"),
+    makeMetadata(undefined, "EchoService.echo"),
     "Hello World"
   );
-  Logger.info(`EchoService.echo response: ${echoResponse.data.toString()}`);
+  Logger.info(
+    `EchoService.echo response: ${Bytes.readUtf8(
+      echoResponse.data!,
+      0,
+      echoResponse.data!.length
+    )}`
+  );
 
   // this request will reject (unknown route)
   try {
     await requestResponse(
       rsocket,
-      makeMetadata(null, "UnknownService.unknown"),
+      makeMetadata(undefined, "UnknownService.unknown"),
       "Hello World"
     );
   } catch (e) {
@@ -136,7 +143,7 @@ async function main() {
 
   // this request will reject (no routing data)
   try {
-    await requestResponse(rsocket, makeMetadata(null), "Hello World");
+    await requestResponse(rsocket, makeMetadata(undefined), "Hello World");
   } catch (e) {
     Logger.error(`Expected error: ${e}`);
   }
@@ -145,7 +152,13 @@ async function main() {
     rsocket,
     makeMetadata(exampleToken, "AuthService.whoAmI")
   );
-  Logger.info(`AuthService.whoAmI response: ${whoAmiResponse.data.toString()}`);
+  Logger.info(
+    `AuthService.whoAmI response: ${Bytes.readUtf8(
+      whoAmiResponse.data!,
+      0,
+      whoAmiResponse.data!.length
+    )}`
+  );
 }
 
 main()

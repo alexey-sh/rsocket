@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { RSocket, RSocketConnector, RSocketServer } from "rsocket-core";
+import { Bytes, RSocket, RSocketConnector, RSocketServer } from "rsocket-core";
 import { Codec } from "rsocket-messaging";
 import { RxRequestersFactory, RxRespondersFactory } from "rsocket-adapter-rxjs";
 import { TcpClientTransport } from "rsocket-tcp-client";
@@ -66,7 +66,7 @@ class EchoService {
 
   handleLogFireAndForget(data: string): Observable<void> {
     Logger.info(`[server] received: ${data}`);
-    return of(null);
+    return of(undefined);
   }
 }
 
@@ -190,12 +190,12 @@ async function requestChannel(rsocket: RSocket) {
 class StringCodec implements Codec<string> {
   readonly mimeType: string = "text/plain";
 
-  decode(buffer: Buffer): string {
-    return buffer.toString();
+  decode(buffer: Uint8Array): string {
+    return Bytes.readUtf8(buffer, 0, buffer.length);
   }
 
-  encode(entity: string): Buffer {
-    return Buffer.from(entity);
+  encode(entity: string): Uint8Array {
+    return Bytes.fromUtf8(entity);
   }
 }
 

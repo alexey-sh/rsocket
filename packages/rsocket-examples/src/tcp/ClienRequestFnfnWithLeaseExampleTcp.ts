@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { RSocket, RSocketConnector } from "rsocket-core";
+import { Bytes, RSocket, RSocketConnector } from "rsocket-core";
 import { TcpClientTransport } from "rsocket-tcp-client";
 import { exit } from "process";
-
-let serverCloseable;
 
 function makeConnector() {
   return new RSocketConnector({
@@ -36,7 +34,7 @@ async function fnf(rsocket: RSocket) {
   return new Promise((resolve, reject) => {
     return rsocket.fireAndForget(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
       },
       {
         onError: (e) => {
@@ -63,7 +61,4 @@ main()
   .catch((error: Error) => {
     console.error(error);
     exit(1);
-  })
-  .finally(() => {
-    serverCloseable.close();
   });

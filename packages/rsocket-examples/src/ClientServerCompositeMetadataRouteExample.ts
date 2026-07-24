@@ -15,6 +15,7 @@
  */
 
 import {
+  Bytes,
   ErrorCodes,
   OnExtensionSubscriber,
   OnNextSubscriber,
@@ -25,6 +26,7 @@ import {
   RSocketError,
   RSocketServer,
 } from "rsocket-core";
+import { bytesToUtf8 } from "./shared/bytesToUtf8";
 import { TcpClientTransport } from "rsocket-tcp-client";
 import { TcpServerTransport } from "rsocket-tcp-server";
 import {
@@ -72,7 +74,10 @@ class EchoService {
       () =>
         responderStream.onNext(
           {
-            data: Buffer.concat([Buffer.from("Echo: "), payload.data]),
+            data: Bytes.concat([
+              Bytes.fromUtf8("Echo: "),
+              payload.data ?? Bytes.alloc(0),
+            ]),
           },
           true
         ),
@@ -167,7 +172,7 @@ async function requestResponse(rsocket: RSocket, route?: string) {
   if (route) {
     const encodedRoute = encodeRoute(route);
 
-    const map = new Map<WellKnownMimeType, Buffer>();
+    const map = new Map<WellKnownMimeType, Uint8Array>();
     map.set(MESSAGE_RSOCKET_ROUTING, encodedRoute);
     compositeMetaData = encodeCompositeMetadata(map);
   }
@@ -175,7 +180,7 @@ async function requestResponse(rsocket: RSocket, route?: string) {
   return new Promise((resolve, reject) => {
     return rsocket.requestResponse(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
         metadata: compositeMetaData,
       },
       {
@@ -184,7 +189,7 @@ async function requestResponse(rsocket: RSocket, route?: string) {
         },
         onNext: (payload, isComplete) => {
           Logger.info(
-            `payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
           resolve(payload);
         },

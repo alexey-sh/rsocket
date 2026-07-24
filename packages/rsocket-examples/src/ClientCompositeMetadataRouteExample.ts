@@ -1,10 +1,11 @@
-import { RSocket, RSocketConnector } from "@rsocket/core";
-import { TcpClientTransport } from "@rsocket/transport-tcp-client";
+import { Bytes, RSocket, RSocketConnector } from "rsocket-core";
+import { bytesToUtf8 } from "./shared/bytesToUtf8";
+import { TcpClientTransport } from "rsocket-tcp-client";
 import {
   encodeCompositeMetadata,
   encodeRoute,
   WellKnownMimeType,
-} from "@rsocket/composite-metadata";
+} from "rsocket-composite-metadata";
 import Logger from "./shared/logger";
 import { exit } from "process";
 import MESSAGE_RSOCKET_ROUTING = WellKnownMimeType.MESSAGE_RSOCKET_ROUTING;
@@ -41,7 +42,7 @@ function createRoute(route?: string) {
   if (route) {
     const encodedRoute = encodeRoute(route);
 
-    const map = new Map<WellKnownMimeType, Buffer>();
+    const map = new Map<WellKnownMimeType, Uint8Array>();
     map.set(MESSAGE_RSOCKET_ROUTING, encodedRoute);
     compositeMetaData = encodeCompositeMetadata(map);
   }
@@ -53,7 +54,7 @@ async function requestResponse(rsocket: RSocket, route: string, data: string) {
   return new Promise((resolve, reject) => {
     return rsocket.requestResponse(
       {
-        data: Buffer.from(data),
+        data: Bytes.fromUtf8(data),
         metadata: createRoute(route),
       },
       {
@@ -62,7 +63,7 @@ async function requestResponse(rsocket: RSocket, route: string, data: string) {
         },
         onNext: (payload, isComplete) => {
           Logger.info(
-            `requestResponse onNext payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `requestResponse onNext payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
           resolve(payload);
         },
@@ -93,7 +94,7 @@ async function main() {
     const maxPayloads = 10;
     const requester = rsocket.requestStream(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
         metadata: createRoute("messages.incoming"),
       },
       3,
@@ -101,7 +102,7 @@ async function main() {
         onError: (e) => reject(e),
         onNext: (payload, isComplete) => {
           Logger.info(
-            `[client] payload[data: ${payload.data}; metadata: ${payload.metadata}]|isComplete: ${isComplete}`
+            `[client] payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|isComplete: ${isComplete}`
           );
 
           payloadsReceived++;

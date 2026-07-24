@@ -15,6 +15,8 @@
  */
 
 import {
+  Bytes,
+  Closeable,
   OnExtensionSubscriber,
   OnNextSubscriber,
   OnTerminalSubscriber,
@@ -22,17 +24,18 @@ import {
   RSocketConnector,
   RSocketServer,
 } from "rsocket-core";
+import { bytesToUtf8 } from "../shared/bytesToUtf8";
 import { WebsocketClientTransport } from "rsocket-websocket-client";
 import { WebsocketServerTransport } from "rsocket-websocket-server";
 import { exit } from "process";
-import WebSocket from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import Logger from "../shared/logger";
 
 function makeServer() {
   return new RSocketServer({
     transport: new WebsocketServerTransport({
       wsCreator: (options) => {
-        return new WebSocket.Server({
+        return new WebSocketServer({
           port: 8080,
         });
       },
@@ -48,10 +51,10 @@ function makeServer() {
               OnExtensionSubscriber
           ) => {
             Logger.info(
-              `[server] requestStream payload[data: ${payload.data}; metadata: ${payload.metadata}]|initialRequestN: ${initialRequestN}`
+              `[server] requestStream payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|initialRequestN: ${initialRequestN}`
             );
 
-            let interval = null;
+            let interval: ReturnType<typeof setInterval>;
             let requestedResponses = initialRequestN;
             let sentResponses = 0;
 
@@ -61,7 +64,7 @@ function makeServer() {
               let isComplete = sentResponses >= requestedResponses;
               responderStream.onNext(
                 {
-                  data: Buffer.from(new Date()),
+                  data: Bytes.fromUtf8(new Date().toString()),
                   metadata: undefined,
                 },
                 isComplete
@@ -100,7 +103,7 @@ function makeConnector() {
   });
 }
 
-let serverCloseable;
+let serverCloseable: Closeable | undefined;
 
 async function main() {
   const server = makeServer();
@@ -114,14 +117,14 @@ async function main() {
     const maxPayloads = 10;
     const requester = rsocket.requestStream(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
       },
       3,
       {
         onError: (e) => reject(e),
         onNext: (payload, isComplete) => {
           Logger.info(
-            `[client] payload[data: ${payload.data}; metadata: ${payload.metadata}]|isComplete: ${isComplete}`
+            `[client] payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|isComplete: ${isComplete}`
           );
 
           payloadsReceived++;
@@ -156,5 +159,5 @@ main()
     exit(1);
   })
   .finally(() => {
-    serverCloseable.close();
+    serverCloseable?.close();
   });

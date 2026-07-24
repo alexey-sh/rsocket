@@ -15,6 +15,8 @@
  */
 
 import {
+  Bytes,
+  Closeable,
   OnExtensionSubscriber,
   OnNextSubscriber,
   OnTerminalSubscriber,
@@ -23,11 +25,12 @@ import {
   RSocketConnector,
   RSocketServer,
 } from "rsocket-core";
+import { bytesToUtf8 } from "../shared/bytesToUtf8";
 import { TcpClientTransport } from "rsocket-tcp-client";
 import { TcpServerTransport } from "rsocket-tcp-server";
 import { exit } from "process";
 
-let serverCloseable;
+let serverCloseable: Closeable | undefined;
 
 function makeServer() {
   return new RSocketServer({
@@ -49,7 +52,10 @@ function makeServer() {
             () =>
               responderStream.onNext(
                 {
-                  data: Buffer.concat([Buffer.from("Echo: "), payload.data]),
+                  data: Bytes.concat([
+                    Bytes.fromUtf8("Echo: "),
+                    payload.data ?? Bytes.alloc(0),
+                  ]),
                 },
                 true
               ),
@@ -85,7 +91,7 @@ async function requestResponse(rsocket: RSocket) {
   return new Promise((resolve, reject) => {
     return rsocket.requestResponse(
       {
-        data: Buffer.from("Hello World"),
+        data: Bytes.fromUtf8("Hello World"),
       },
       {
         onError: (e) => {
@@ -93,7 +99,7 @@ async function requestResponse(rsocket: RSocket) {
         },
         onNext: (payload, isComplete) => {
           console.log(
-            `payload[data: ${payload.data}; metadata: ${payload.metadata}]|${isComplete}`
+            `payload[data: ${bytesToUtf8(payload.data)}; metadata: ${payload.metadata}]|${isComplete}`
           );
           resolve(payload);
         },
@@ -121,5 +127,5 @@ main()
     exit(1);
   })
   .finally(() => {
-    serverCloseable.close();
+    serverCloseable?.close();
   });
