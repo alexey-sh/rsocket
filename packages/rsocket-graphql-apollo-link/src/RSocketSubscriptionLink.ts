@@ -19,7 +19,7 @@
 import { ApolloLink, Observable } from "@apollo/client";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { PartialObserver } from "rxjs";
-import { MAX_REQUEST_COUNT, Payload, RSocket } from "rsocket-core";
+import { Bytes, MAX_REQUEST_COUNT, Payload, RSocket } from "rsocket-core";
 import { ExecutionResult, print } from "graphql";
 import {
   encodeCompositeMetadata,
@@ -54,7 +54,7 @@ class SubscriptionClient {
     const metadata = new Map<WellKnownMimeType, Uint8Array>();
     metadata.set(
       WellKnownMimeType.MESSAGE_RSOCKET_MIMETYPE,
-      Buffer.from(WellKnownMimeType.APPLICATION_JSON.toString())
+      Bytes.fromUtf8(WellKnownMimeType.APPLICATION_JSON.toString())
     );
     if (this.options?.route) {
       metadata.set(
@@ -67,7 +67,7 @@ class SubscriptionClient {
 
     const requestStream = this.client.requestStream(
       {
-        data: Buffer.from(JSON.stringify(operation)),
+        data: Bytes.fromUtf8(JSON.stringify(operation)),
         metadata: encodedMetadata,
       },
       MAX_REQUEST_COUNT,
@@ -81,7 +81,7 @@ class SubscriptionClient {
         onExtension(): void {},
         onNext(payload: Payload, isComplete: boolean): void {
           const { data } = payload;
-          const decoded = data!.toString();
+          const decoded = Bytes.readUtf8(data!, 0, data!.length);
           const deserialized = JSON.parse(decoded) as ExecutionResult<
             Data,
             Extensions

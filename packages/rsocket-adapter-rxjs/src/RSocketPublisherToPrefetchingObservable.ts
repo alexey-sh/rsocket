@@ -15,6 +15,7 @@
  */
 "use strict";
 import {
+  Bytes,
   Cancellable,
   OnExtensionSubscriber,
   OnNextSubscriber,
@@ -68,7 +69,7 @@ export default class RSocketPublisherToPrefetchingObservable<
   onNext(payload: Payload, isComplete: boolean): void {
     this.received++;
     this.observer.next(
-      this.responseCodec!.decode(payload.data ?? Buffer.allocUnsafe(0))
+      this.responseCodec!.decode(payload.data ?? Bytes.alloc(0))
     );
 
     if (isComplete) {
@@ -92,7 +93,7 @@ export default class RSocketPublisherToPrefetchingObservable<
 
   onExtension(
     extendedType: number,
-    content: Buffer,
+    content: Uint8Array,
     canBeIgnored: boolean
   ): void {}
 

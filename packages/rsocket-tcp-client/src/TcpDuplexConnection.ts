@@ -15,6 +15,7 @@
  */
 
 import {
+  Bytes,
   Closeable,
   Deferred,
   Demultiplexer,
@@ -33,7 +34,7 @@ export class TcpDuplexConnection
   implements DuplexConnection, Outbound
 {
   private error!: Error;
-  private remainingBuffer: Buffer = Buffer.allocUnsafe(0);
+  private remainingBuffer: Uint8Array = Bytes.alloc(0);
 
   readonly multiplexerDemultiplexer: Multiplexer & Demultiplexer & FrameHandler;
 
@@ -120,18 +121,18 @@ export class TcpDuplexConnection
     this.error = error;
   };
 
-  private handleData = (chunks: Buffer): void => {
+  private handleData = (chunks: Uint8Array): void => {
     try {
       // Combine partial frame data from previous chunks with the next chunk,
       // then extract any complete frames plus any remaining data.
-      const buffer = Buffer.concat([this.remainingBuffer, chunks]);
+      const buffer = Bytes.concat([this.remainingBuffer, chunks]);
       let lastOffset = 0;
       const frames = this.deserializer.deserializeFrames(buffer);
       for (const [frame, offset] of frames) {
         lastOffset = offset;
         this.multiplexerDemultiplexer.handle(frame);
       }
-      this.remainingBuffer = buffer.slice(lastOffset, buffer.length);
+      this.remainingBuffer = buffer.subarray(lastOffset, buffer.length);
     } catch (error) {
       this.close(error instanceof Error ? error : new Error(String(error)));
     }

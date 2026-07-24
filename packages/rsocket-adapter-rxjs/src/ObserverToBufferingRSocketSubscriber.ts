@@ -91,7 +91,7 @@ class ObserverToBufferingRSocketSubscriber<T>
 
   onExtension(
     extendedType: number,
-    content: Buffer,
+    content: Uint8Array,
     canBeIgnored: boolean
   ): void {}
 

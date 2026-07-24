@@ -17,7 +17,7 @@
 "use strict";
 
 import { ApolloLink, Observable } from "@apollo/client";
-import { Payload, RSocket } from "rsocket-core";
+import { Bytes, Payload, RSocket } from "rsocket-core";
 import {
   encodeCompositeMetadata,
   encodeRoutes,
@@ -48,12 +48,12 @@ export class RSocketQueryLink extends ApolloLink {
       // per spec query should be a string (https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md#example-1)
       query: print(operation.query),
     });
-    const encodedData = Buffer.from(json);
+    const encodedData = Bytes.fromUtf8(json);
 
     const metadata = new Map<WellKnownMimeType, Uint8Array>();
     metadata.set(
       WellKnownMimeType.MESSAGE_RSOCKET_MIMETYPE,
-      Buffer.from(WellKnownMimeType.APPLICATION_JSON.toString())
+      Bytes.fromUtf8(WellKnownMimeType.APPLICATION_JSON.toString())
     );
     if (this.options?.route) {
       metadata.set(
@@ -78,7 +78,7 @@ export class RSocketQueryLink extends ApolloLink {
           onExtension(): void {},
           onNext(payload: Payload, _isComplete: boolean): void {
             const { data } = payload;
-            const decoded = data!.toString();
+            const decoded = Bytes.readUtf8(data!, 0, data!.length);
             const deserialized = JSON.parse(decoded) as ApolloLink.Result;
             observer.next(deserialized);
             observer.complete();

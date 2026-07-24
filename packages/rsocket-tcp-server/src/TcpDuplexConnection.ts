@@ -15,6 +15,7 @@
  */
 
 import {
+  Bytes,
   Closeable,
   Deferred,
   Demultiplexer,
@@ -33,7 +34,7 @@ export class TcpDuplexConnection
   implements DuplexConnection, Outbound
 {
   private error!: Error;
-  private remainingBuffer: Buffer = Buffer.allocUnsafe(0);
+  private remainingBuffer: Uint8Array = Bytes.alloc(0);
 
   readonly multiplexerDemultiplexer: Multiplexer & Demultiplexer & FrameHandler;
 
@@ -101,17 +102,17 @@ export class TcpDuplexConnection
     this.close(error instanceof Error ? error : new Error(String(error)));
   };
 
-  private handleData = (chunks: Buffer): void => {
+  private handleData = (chunks: Uint8Array): void => {
     try {
       // Combine partial frame data from previous chunks with the next chunk,
       // then extract any complete frames plus any remaining data.
-      const buffer = Buffer.concat([this.remainingBuffer, chunks]);
+      const buffer = Bytes.concat([this.remainingBuffer, chunks]);
       let lastOffset = 0;
       for (const [frame, offset] of deserializeFrames(buffer)) {
         lastOffset = offset;
         this.multiplexerDemultiplexer.handle(frame);
       }
-      this.remainingBuffer = buffer.slice(lastOffset, buffer.length);
+      this.remainingBuffer = buffer.subarray(lastOffset, buffer.length);
     } catch (error) {
       this.close(error instanceof Error ? error : new Error(String(error)));
     }
@@ -134,9 +135,9 @@ export class TcpDuplexConnection
     // incoming data until a full frame is available instead of assuming the
     // first `data` event contains a complete frame (which threw a TypeError,
     // surfacing as an unhandled rejection, on short or split first packets).
-    let bufferedData = Buffer.allocUnsafe(0);
-    const readFirstFrame = async (chunk: Buffer): Promise<void> => {
-      bufferedData = Buffer.concat([bufferedData, chunk]);
+    let bufferedData = Bytes.alloc(0);
+    const readFirstFrame = async (chunk: Uint8Array): Promise<void> => {
+      bufferedData = Bytes.concat([bufferedData, chunk]);
 
       let first: IteratorResult<[Frame, number]>;
       try {
@@ -168,7 +169,7 @@ export class TcpDuplexConnection
         socket.resume();
         if (offset < bufferedData.length) {
           connection.handleData(
-            bufferedData.slice(offset, bufferedData.length)
+            bufferedData.subarray(offset, bufferedData.length)
           );
         }
       } catch (error) {

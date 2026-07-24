@@ -1,4 +1,5 @@
 import {
+  Bytes,
   Cancellable,
   OnExtensionSubscriber,
   OnNextSubscriber,
@@ -153,7 +154,7 @@ export class RSocketApolloServer<
       next(graphqlResponse: string) {
         responderStream.onNext(
           {
-            data: Buffer.from(graphqlResponse),
+            data: Bytes.fromUtf8(graphqlResponse),
           },
           true
         );
@@ -208,7 +209,7 @@ export class RSocketApolloServer<
       next(graphqlResponse: ExecutionResult) {
         subscriber.onNext(
           {
-            data: Buffer.from(JSON.stringify(graphqlResponse)),
+            data: Bytes.fromUtf8(JSON.stringify(graphqlResponse)),
           },
           false
         );
@@ -225,7 +226,7 @@ export class RSocketApolloServer<
   ): Observable<ExecutionResult> {
     const runSubscription = async () => {
       const operation = JSON.parse(
-        payload.data!.toString()
+        Bytes.readUtf8(payload.data!, 0, payload.data!.length)
       ) as RSocketOperation;
       const document = parse(operation.query);
       const contextValue = await this.contextFactory({ payload });

@@ -78,10 +78,10 @@ export class WebsocketDuplexConnection
 
     const buffer = serializeFrame(frame);
 
-    // Node's `Buffer` is typed `Uint8Array<ArrayBufferLike>`, but the DOM
-    // `WebSocket.send()` requires an `ArrayBuffer`-backed view. serializeFrame()
-    // returns a pooled Buffer backed by a real `ArrayBuffer` (never a
-    // `SharedArrayBuffer`), so narrowing the element type here is safe.
+    // The DOM `WebSocket.send()` requires an `ArrayBuffer`-backed view.
+    // serializeFrame() returns a Uint8Array backed by a freshly allocated
+    // `ArrayBuffer` (never a `SharedArrayBuffer`), so narrowing the element
+    // type here is safe.
     this.websocket.send(buffer as Uint8Array<ArrayBuffer>);
   }
 
@@ -101,7 +101,9 @@ export class WebsocketDuplexConnection
 
   private handleMessage = (message: MessageEvent): void => {
     try {
-      const buffer = Buffer.from(message.data);
+      // ws delivers binary as ArrayBuffer (browser) or Buffer (Node ws); both
+      // wrap into a Uint8Array without a Buffer polyfill.
+      const buffer = new Uint8Array(message.data);
       const frame = this.deserializer.deserializeFrame(buffer);
 
       this.multiplexerDemultiplexer.handle(frame);

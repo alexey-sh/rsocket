@@ -101,7 +101,7 @@ export class WebsocketDuplexConnection
     this.close(error instanceof Error ? error : new Error(String(error)));
   };
 
-  private handleMessage = (buffer: Buffer): void => {
+  private handleMessage = (buffer: Uint8Array): void => {
     try {
       const frame =
         /* this._options.lengthPrefixedFrames

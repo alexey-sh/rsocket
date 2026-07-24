@@ -17,6 +17,7 @@
 "use strict";
 
 import {
+  Bytes,
   Cancellable,
   FrameTypes,
   OnExtensionSubscriber,
@@ -49,7 +50,7 @@ export function fireAndForget<IN>(
         undefined
       );
 
-      handler(codec.decode(p.data ?? Buffer.allocUnsafe(0))).subscribe(
+      handler(codec.decode(p.data ?? Bytes.alloc(0))).subscribe(
         cancellableSubscriber
       );
 
@@ -89,9 +90,9 @@ export function requestResponse<IN, OUT>(
         codecs.outputCodec
       );
 
-      handler(
-        codecs.inputCodec!.decode(p.data ?? Buffer.allocUnsafe(0))
-      ).subscribe(cancellableSubscriber);
+      handler(codecs.inputCodec!.decode(p.data ?? Bytes.alloc(0))).subscribe(
+        cancellableSubscriber
+      );
 
       return cancellableSubscriber;
     },
@@ -132,9 +133,9 @@ export function requestStream<IN, OUT>(
       const cancellableSubscriber =
         new ObserverToBufferingRSocketSubscriber<OUT>(r, s, codecs.outputCodec);
 
-      handler(
-        codecs.inputCodec!.decode(p.data ?? Buffer.allocUnsafe(0))
-      ).subscribe(cancellableSubscriber);
+      handler(codecs.inputCodec!.decode(p.data ?? Bytes.alloc(0))).subscribe(
+        cancellableSubscriber
+      );
 
       return cancellableSubscriber;
     },

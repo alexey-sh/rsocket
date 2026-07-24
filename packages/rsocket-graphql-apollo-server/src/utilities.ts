@@ -1,4 +1,4 @@
-import { Payload } from "rsocket-core";
+import { Bytes, Payload } from "rsocket-core";
 import {
   decodeCompositeMetadata,
   decodeRoutes,
@@ -17,7 +17,7 @@ function hasGraphQLJsonMimeType(metadata: Map<string, any>) {
 
 export function parsePayloadForQuery(payload: Payload) {
   const { data } = payload;
-  const decoded = data!.toString();
+  const decoded = Bytes.readUtf8(data!, 0, data!.length);
   return JSON.parse(decoded);
 }
 
@@ -38,7 +38,10 @@ export function mapMetadata(payload: Payload) {
           break;
         }
         default: {
-          mappedMetaData.set(metaData.mimeType!, metaData.content.toString());
+          mappedMetaData.set(
+            metaData.mimeType!,
+            Bytes.readUtf8(metaData.content, 0, metaData.content.length)
+          );
           break;
         }
       }
