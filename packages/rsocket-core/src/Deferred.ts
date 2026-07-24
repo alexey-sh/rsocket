@@ -42,15 +42,15 @@ export class Deferred implements Closeable {
     this._done = true;
     this._error = error;
 
-    if (error) {
-      for (const callback of this.onCloseCallbacks) {
-        callback(error);
-      }
-      return;
-    }
+    // Snapshot then release the callbacks so their closures are not retained
+    // for the lifetime of this Deferred; any later onClose() registration is
+    // invoked immediately instead of being stored. (callback(undefined) is
+    // equivalent to the previous no-arg call.)
+    const callbacks = this.onCloseCallbacks;
+    this.onCloseCallbacks = [];
 
-    for (const callback of this.onCloseCallbacks) {
-      callback();
+    for (const callback of callbacks) {
+      callback(error);
     }
   }
 
