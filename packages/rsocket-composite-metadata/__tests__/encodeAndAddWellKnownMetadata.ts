@@ -13,14 +13,14 @@ describe("encodeWellKnownMetadataHeader", () => {
     );
 
     // 122 | 128
-    const maskedId = metadata.readUInt8(0);
+    const maskedId = metadata[0];
     const length = readUInt24BE(metadata, 1);
     const value = metadata.slice(4, metadata.length);
 
     expect(maskedId).toBe(250);
     expect(length).toBe(4);
     expect(value.length).toBe(4);
-    expect(value.toString("utf-8")).toBe("test");
+    expect(Buffer.from(value).toString("utf-8")).toBe("test");
   });
 
   it("encodes the header as per spec when identifier given", () => {
@@ -32,13 +32,13 @@ describe("encodeWellKnownMetadataHeader", () => {
     );
 
     // 122 | 128
-    const maskedId = metadata.readUInt8(0);
+    const maskedId = metadata[0];
     const length = readUInt24BE(metadata, 1);
     const value = metadata.slice(4, metadata.length);
 
     expect(maskedId).toBe(250);
     expect(length).toBe(4);
     expect(value.length).toBe(4);
-    expect(value.toString("utf-8")).toBe("test");
+    expect(Buffer.from(value).toString("utf-8")).toBe("test");
   });
 });

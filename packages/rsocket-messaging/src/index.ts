@@ -38,25 +38,28 @@ import {
 export interface Codec<D> {
   mimeType: string;
 
-  encode(entity: D): Buffer;
+  encode(entity: D): Uint8Array;
   // Accept any bytes: core delivers payload data as Uint8Array (Buffer is a
   // subclass, so existing Buffer-based Codec impls remain valid).
   decode(buffer: Uint8Array): D;
 }
 
 export interface RequestSpec {
-  metadata(key: string | WellKnownMimeType | number, content: Buffer): this;
+  metadata(key: string | WellKnownMimeType | number, content: Uint8Array): this;
 
   request<TResponseType>(
     exchangeFunction: (
       rsocket: RSocket,
-      metadata: Map<string | number | WellKnownMimeType, Buffer>
+      metadata: Map<string | number | WellKnownMimeType, Uint8Array>
     ) => TResponseType
   ): TResponseType;
 }
 
 class DefaultRequestSpec implements RequestSpec {
-  private readonly metadatas: Map<string | number | WellKnownMimeType, Buffer>;
+  private readonly metadatas: Map<
+    string | number | WellKnownMimeType,
+    Uint8Array
+  >;
 
   constructor(
     route: string,
@@ -67,7 +70,10 @@ class DefaultRequestSpec implements RequestSpec {
     ]);
   }
 
-  metadata(key: string | number | WellKnownMimeType, content: Buffer): this {
+  metadata(
+    key: string | number | WellKnownMimeType,
+    content: Uint8Array
+  ): this {
     this.metadatas.set(key, content);
     return this;
   }
@@ -75,7 +81,7 @@ class DefaultRequestSpec implements RequestSpec {
   request<RPublisher>(
     exchangeFunction: (
       rsocket: RSocket,
-      metadatas: Map<string | number | WellKnownMimeType, Buffer>
+      metadatas: Map<string | number | WellKnownMimeType, Uint8Array>
     ) => RPublisher
   ): RPublisher {
     return exchangeFunction(this.rsocket, this.metadatas);
@@ -102,7 +108,7 @@ class WrappingRSocketRequester implements RSocketRequester {
 
 interface TypesRegistry {
   [FrameTypes.METADATA_PUSH]: (
-    metadata: Buffer,
+    metadata: Uint8Array,
     responderStream: OnTerminalSubscriber
   ) => void;
   [FrameTypes.REQUEST_FNF]: (
@@ -382,7 +388,10 @@ class DefaultRSocketResponder
     return this;
   }
 
-  metadataPush(metadata: Buffer, responderStream: OnTerminalSubscriber): void {
+  metadataPush(
+    metadata: Uint8Array,
+    responderStream: OnTerminalSubscriber
+  ): void {
     const handlers = this.findTypesRegistry(metadata);
 
     if (handlers) {
@@ -402,9 +411,7 @@ class DefaultRSocketResponder
     metadata: Uint8Array | undefined
   ): TypesRegistry | undefined {
     if (metadata && metadata.length) {
-      // TODO(Phase E2): drop the cast once rsocket-composite-metadata accepts
-      // Uint8Array. Runtime-safe today — Node transports deliver Buffer.
-      for (let entry of decodeCompositeMetadata(metadata as Buffer)) {
+      for (let entry of decodeCompositeMetadata(metadata)) {
         if (
           entry.mimeType === WellKnownMimeType.MESSAGE_RSOCKET_ROUTING.string
         ) {
@@ -431,7 +438,7 @@ class DefaultRSocketResponder
   }
   onExtension(
     extendedType: number,
-    content: Buffer,
+    content: Uint8Array,
     canBeIgnored: boolean
   ): void {
     // noops

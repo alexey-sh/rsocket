@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-export class RoutingMetadata implements Iterable<string> {
-  _buffer: Buffer;
+import { Bytes } from "rsocket-core";
 
-  constructor(buffer: Buffer) {
+export class RoutingMetadata implements Iterable<string> {
+  _buffer: Uint8Array;
+
+  constructor(buffer: Uint8Array) {
     this._buffer = buffer;
   }
 
@@ -31,21 +33,21 @@ export class RoutingMetadata implements Iterable<string> {
 }
 
 /**
- * Encode given set of routes into {@link Buffer} following the <a href="https://github.com/rsocket/rsocket/blob/master/Extensions/Routing.md">Routing Metadata Layout</a>
+ * Encode given set of routes into {@link Uint8Array} following the <a href="https://github.com/rsocket/rsocket/blob/master/Extensions/Routing.md">Routing Metadata Layout</a>
  *
  * @param routes non-empty set of routes
- * @returns {Buffer} with encoded content
+ * @returns {Uint8Array} with encoded content
  */
-export function encodeRoutes(...routes: string[]): Buffer {
+export function encodeRoutes(...routes: string[]): Uint8Array {
   if (routes.length < 1) {
     throw new Error("routes should be non empty array");
   }
 
-  return Buffer.concat(routes.map((route) => encodeRoute(route)));
+  return Bytes.concat(routes.map((route) => encodeRoute(route)));
 }
 
-export function encodeRoute(route: string): Buffer {
-  const encodedRoute = Buffer.from(route, "utf8");
+export function encodeRoute(route: string): Uint8Array {
+  const encodedRoute = Bytes.fromUtf8(route);
 
   if (encodedRoute.length > 255) {
     throw new Error(
@@ -53,21 +55,21 @@ export function encodeRoute(route: string): Buffer {
     );
   }
 
-  const encodedLength = Buffer.allocUnsafe(1);
+  const encodedLength = Bytes.alloc(1);
 
-  encodedLength.writeUInt8(encodedRoute.length);
+  Bytes.writeUInt8(encodedLength, encodedRoute.length, 0);
 
-  return Buffer.concat([encodedLength, encodedRoute]);
+  return Bytes.concat([encodedLength, encodedRoute]);
 }
 
 export function* decodeRoutes(
-  routeMetadataBuffer: Buffer
+  routeMetadataBuffer: Uint8Array
 ): Generator<string, void, any> {
   const length = routeMetadataBuffer.byteLength;
   let offset = 0;
 
   while (offset < length) {
-    const routeLength = routeMetadataBuffer.readUInt8(offset++);
+    const routeLength = Bytes.readUInt8(routeMetadataBuffer, offset++);
 
     if (offset + routeLength > length) {
       throw new Error(
@@ -75,8 +77,8 @@ export function* decodeRoutes(
       );
     }
 
-    const route = routeMetadataBuffer.toString(
-      "utf8",
+    const route = Bytes.readUtf8(
+      routeMetadataBuffer,
       offset,
       offset + routeLength
     );

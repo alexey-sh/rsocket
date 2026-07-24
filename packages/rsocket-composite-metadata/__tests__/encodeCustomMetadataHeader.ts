@@ -26,7 +26,7 @@ describe("encodeCustomMetadataHeader", () => {
     // full length (uint24)
     const expectedLength24 = "000004";
     const header = encodeCustomMetadataHeader(mime, mime.length);
-    expect(header.toString("hex")).toBe(
+    expect(Buffer.from(header).toString("hex")).toBe(
       `${expectedLength8}${t}${e}${s}${t}${expectedLength24}`
     );
   });

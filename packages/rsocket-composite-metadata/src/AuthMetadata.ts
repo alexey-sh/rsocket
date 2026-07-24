@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Bytes } from "rsocket-core";
 import { WellKnownAuthType } from "./WellKnownAuthType";
 
 const authTypeIdBytesLength = 1;
@@ -28,22 +29,27 @@ type AuthMetadata = {
     identifier: number;
     string: string;
   };
-  payload: Buffer;
+  payload: Uint8Array;
 };
 
-type UsernameAndPassword = { username: Buffer; password: Buffer };
+type UsernameAndPassword = { username: Uint8Array; password: Uint8Array };
+
+// Coerce a string (UTF-8) or existing byte buffer into a Uint8Array.
+function toBytes(value: string | Uint8Array): Uint8Array {
+  return typeof value === "string" ? Bytes.fromUtf8(value) : value;
+}
 
 /**
- * Encode Auth metadata with the given {@link WellKnownAuthType} and auth payload {@link Buffer}
+ * Encode Auth metadata with the given {@link WellKnownAuthType} and auth payload {@link Uint8Array}
  *
  * @param authType well known auth type
  * @param authPayloadBuffer auth payload buffer
- * @returns encoded {@link WellKnownAuthType} and payload {@link Buffer}
+ * @returns encoded {@link WellKnownAuthType} and payload {@link Uint8Array}
  */
 export function encodeWellKnownAuthMetadata(
   authType: WellKnownAuthType,
-  authPayloadBuffer: Buffer
-): Buffer {
+  authPayloadBuffer: Uint8Array
+): Uint8Array {
   if (
     authType === WellKnownAuthType.UNPARSEABLE_AUTH_TYPE ||
     authType === WellKnownAuthType.UNKNOWN_RESERVED_AUTH_TYPE
@@ -53,25 +59,25 @@ export function encodeWellKnownAuthMetadata(
     );
   }
 
-  const buffer = Buffer.allocUnsafe(authTypeIdBytesLength);
+  const buffer = Bytes.alloc(authTypeIdBytesLength);
 
-  buffer.writeUInt8(authType.identifier | streamMetadataKnownMask);
+  Bytes.writeUInt8(buffer, authType.identifier | streamMetadataKnownMask, 0);
 
-  return Buffer.concat([buffer, authPayloadBuffer]);
+  return Bytes.concat([buffer, authPayloadBuffer]);
 }
 
 /**
- * Encode Auth metadata with the given custom auth type {@link string} and auth payload {@link Buffer}
+ * Encode Auth metadata with the given custom auth type {@link string} and auth payload {@link Uint8Array}
  *
  * @param customAuthType custom auth type
  * @param authPayloadBuffer auth payload buffer
- * @returns encoded {@link WellKnownAuthType} and payload {@link Buffer}
+ * @returns encoded {@link WellKnownAuthType} and payload {@link Uint8Array}
  */
 export function encodeCustomAuthMetadata(
   customAuthType: string,
-  authPayloadBuffer: Buffer
-): Buffer {
-  const customAuthTypeBuffer = Buffer.from(customAuthType);
+  authPayloadBuffer: Uint8Array
+): Uint8Array {
+  const customAuthTypeBuffer = Bytes.fromUtf8(customAuthType);
 
   if (customAuthTypeBuffer.byteLength !== customAuthType.length) {
     throw new Error("Custom auth type must be US_ASCII characters only");
@@ -85,16 +91,16 @@ export function encodeCustomAuthMetadata(
     );
   }
 
-  const buffer = Buffer.allocUnsafe(
+  const buffer = Bytes.alloc(
     customAuthTypeBytesLength + customAuthTypeBuffer.byteLength
   );
 
   // encoded length is one less than actual length, since 0 is never a valid length, which gives
   // wider representation range
-  buffer.writeUInt8(customAuthTypeBuffer.byteLength - 1);
-  buffer.write(customAuthType, customAuthTypeBytesLength);
+  Bytes.writeUInt8(buffer, customAuthTypeBuffer.byteLength - 1, 0);
+  Bytes.writeUtf8(buffer, customAuthType, customAuthTypeBytesLength);
 
-  return Buffer.concat([buffer, authPayloadBuffer]);
+  return Bytes.concat([buffer, authPayloadBuffer]);
 }
 
 /**
@@ -102,14 +108,14 @@ export function encodeCustomAuthMetadata(
  *
  * @param username username
  * @param password password
- * @returns encoded {@link SIMPLE} and given username and password as auth payload {@link Buffer}
+ * @returns encoded {@link SIMPLE} and given username and password as auth payload {@link Uint8Array}
  */
 export function encodeSimpleAuthMetadata(
-  username: string | Buffer,
-  password: string | Buffer
-): Buffer {
-  const usernameBuffer = Buffer.from(username);
-  const passwordBuffer = Buffer.from(password);
+  username: string | Uint8Array,
+  password: string | Uint8Array
+): Uint8Array {
+  const usernameBuffer = toBytes(username);
+  const passwordBuffer = toBytes(password);
   const usernameLength = usernameBuffer.byteLength;
 
   if (usernameLength > 65535) {
@@ -119,54 +125,60 @@ export function encodeSimpleAuthMetadata(
   }
 
   const capacity = authTypeIdBytesLength + usernameLengthBytesLength;
-  const buffer = Buffer.allocUnsafe(capacity);
+  const buffer = Bytes.alloc(capacity);
 
-  buffer.writeUInt8(
-    WellKnownAuthType.SIMPLE.identifier | streamMetadataKnownMask
+  Bytes.writeUInt8(
+    buffer,
+    WellKnownAuthType.SIMPLE.identifier | streamMetadataKnownMask,
+    0
   );
-  buffer.writeUInt16BE(usernameLength, 1);
+  Bytes.writeUInt16BE(buffer, usernameLength, 1);
 
-  return Buffer.concat([buffer, usernameBuffer, passwordBuffer]);
+  return Bytes.concat([buffer, usernameBuffer, passwordBuffer]);
 }
 
 /**
  * Encode Bearer Auth metadata with the given token
  *
  * @param token token
- * @returns encoded {@link BEARER} and given token as auth payload {@link Buffer}
+ * @returns encoded {@link BEARER} and given token as auth payload {@link Uint8Array}
  */
-export function encodeBearerAuthMetadata(token: string | Buffer): Buffer {
-  const tokenBuffer = Buffer.from(token);
-  const buffer = Buffer.allocUnsafe(authTypeIdBytesLength);
+export function encodeBearerAuthMetadata(
+  token: string | Uint8Array
+): Uint8Array {
+  const tokenBuffer = toBytes(token);
+  const buffer = Bytes.alloc(authTypeIdBytesLength);
 
-  buffer.writeUInt8(
-    WellKnownAuthType.BEARER.identifier | streamMetadataKnownMask
+  Bytes.writeUInt8(
+    buffer,
+    WellKnownAuthType.BEARER.identifier | streamMetadataKnownMask,
+    0
   );
 
-  return Buffer.concat([buffer, tokenBuffer]);
+  return Bytes.concat([buffer, tokenBuffer]);
 }
 
 /**
- * Decode auth metadata {@link Buffer} into {@link AuthMetadata} object
+ * Decode auth metadata {@link Uint8Array} into {@link AuthMetadata} object
  *
- * @param metadata auth metadata {@link Buffer}
+ * @param metadata auth metadata {@link Uint8Array}
  * @returns decoded {@link AuthMetadata}
  */
-export function decodeAuthMetadata(metadata: Buffer): AuthMetadata {
+export function decodeAuthMetadata(metadata: Uint8Array): AuthMetadata {
   if (metadata.byteLength < 1) {
     throw new Error(
       "Unable to decode Auth metadata. Not enough readable bytes"
     );
   }
 
-  const lengthOrId = metadata.readUInt8();
+  const lengthOrId = Bytes.readUInt8(metadata, 0);
   const normalizedId = lengthOrId & streamMetadataLengthMask;
 
   if (normalizedId !== lengthOrId) {
     const authType = WellKnownAuthType.fromIdentifier(normalizedId);
 
     return {
-      payload: metadata.slice(1),
+      payload: metadata.subarray(1),
       type: {
         identifier: authType.identifier,
         string: authType.string,
@@ -181,12 +193,12 @@ export function decodeAuthMetadata(metadata: Buffer): AuthMetadata {
       );
     }
 
-    const customAuthTypeString = metadata.toString(
-      "utf8",
+    const customAuthTypeString = Bytes.readUtf8(
+      metadata,
       customAuthTypeBytesLength,
       customAuthTypeBytesLength + realLength
     );
-    const payload = metadata.slice(realLength + customAuthTypeBytesLength);
+    const payload = metadata.subarray(realLength + customAuthTypeBytesLength);
 
     return {
       payload,
@@ -205,7 +217,7 @@ export function decodeAuthMetadata(metadata: Buffer): AuthMetadata {
  * @return sliced username and password buffers
  */
 export function decodeSimpleAuthPayload(
-  authPayload: Buffer
+  authPayload: Uint8Array
 ): UsernameAndPassword {
   if (authPayload.byteLength < usernameLengthBytesLength) {
     throw new Error(
@@ -213,7 +225,7 @@ export function decodeSimpleAuthPayload(
     );
   }
 
-  const usernameLength = authPayload.readUInt16BE();
+  const usernameLength = Bytes.readUInt16BE(authPayload, 0);
 
   if (authPayload.byteLength < usernameLength + usernameLengthBytesLength) {
     throw new Error(
@@ -221,11 +233,11 @@ export function decodeSimpleAuthPayload(
     );
   }
 
-  const username = authPayload.slice(
+  const username = authPayload.subarray(
     usernameLengthBytesLength,
     usernameLengthBytesLength + usernameLength
   );
-  const password = authPayload.slice(
+  const password = authPayload.subarray(
     usernameLengthBytesLength + usernameLength
   );
 

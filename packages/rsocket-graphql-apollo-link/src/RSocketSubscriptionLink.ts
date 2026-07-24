@@ -51,7 +51,7 @@ class SubscriptionClient {
     operation: SubscribeOperation,
     observer: PartialObserver<ExecutionResult<Data, Extensions>>
   ): () => void {
-    const metadata = new Map<WellKnownMimeType, Buffer>();
+    const metadata = new Map<WellKnownMimeType, Uint8Array>();
     metadata.set(
       WellKnownMimeType.MESSAGE_RSOCKET_MIMETYPE,
       Buffer.from(WellKnownMimeType.APPLICATION_JSON.toString())

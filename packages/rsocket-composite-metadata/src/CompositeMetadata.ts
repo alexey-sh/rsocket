@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { readUInt24BE, writeUInt24BE } from "rsocket-core";
+import { Bytes } from "rsocket-core";
 import { WellKnownMimeType } from "./WellKnownMimeType";
 
 export class CompositeMetadata implements Iterable<Entry> {
-  _buffer: Buffer;
+  _buffer: Uint8Array;
 
-  constructor(buffer: Buffer) {
+  constructor(buffer: Uint8Array) {
     this._buffer = buffer;
   }
 
@@ -35,10 +35,12 @@ export class CompositeMetadata implements Iterable<Entry> {
 
 export function encodeCompositeMetadata(
   metadata:
-    | Map<string | WellKnownMimeType | number, Buffer | (() => Buffer)>
-    | Array<[string | WellKnownMimeType | number, Buffer | (() => Buffer)]>
-): Buffer {
-  let encodedCompositeMetadata: Buffer = Buffer.allocUnsafe(0);
+    | Map<string | WellKnownMimeType | number, Uint8Array | (() => Uint8Array)>
+    | Array<
+        [string | WellKnownMimeType | number, Uint8Array | (() => Uint8Array)]
+      >
+): Uint8Array {
+  let encodedCompositeMetadata: Uint8Array = Bytes.alloc(0);
   for (const [metadataKey, metadataValue] of metadata) {
     const metadataRealValue =
       typeof metadataValue === "function" ? metadataValue() : metadataValue;
@@ -67,11 +69,11 @@ export function encodeCompositeMetadata(
 
 // see #encodeMetadataHeader(ByteBufAllocator, String, int)
 export function encodeAndAddCustomMetadata(
-  compositeMetaData: Buffer,
+  compositeMetaData: Uint8Array,
   customMimeType: string,
-  metadata: Buffer
-): Buffer {
-  return Buffer.concat([
+  metadata: Uint8Array
+): Uint8Array {
+  return Bytes.concat([
     compositeMetaData,
     encodeCustomMetadataHeader(customMimeType, metadata.byteLength),
     metadata,
@@ -80,10 +82,10 @@ export function encodeAndAddCustomMetadata(
 
 // see #encodeMetadataHeader(ByteBufAllocator, byte, int)
 export function encodeAndAddWellKnownMetadata(
-  compositeMetadata: Buffer,
+  compositeMetadata: Uint8Array,
   knownMimeType: WellKnownMimeType | number,
-  metadata: Buffer
-): Buffer {
+  metadata: Uint8Array
+): Uint8Array {
   let mimeTypeId: number;
 
   if (Number.isInteger(knownMimeType)) {
@@ -92,7 +94,7 @@ export function encodeAndAddWellKnownMetadata(
     mimeTypeId = (knownMimeType as WellKnownMimeType).identifier;
   }
 
-  return Buffer.concat([
+  return Bytes.concat([
     compositeMetadata,
     encodeWellKnownMetadataHeader(mimeTypeId, metadata.byteLength),
     metadata,
@@ -100,17 +102,17 @@ export function encodeAndAddWellKnownMetadata(
 }
 
 export function decodeMimeAndContentBuffersSlices(
-  compositeMetadata: Buffer,
+  compositeMetadata: Uint8Array,
   entryIndex: number
-): Buffer[] {
-  const mimeIdOrLength: number = compositeMetadata.readInt8(entryIndex);
-  let mime: Buffer;
+): Uint8Array[] {
+  const mimeIdOrLength: number = Bytes.readInt8(compositeMetadata, entryIndex);
+  let mime: Uint8Array;
   let toSkip = entryIndex;
   if (
     (mimeIdOrLength & STREAM_METADATA_KNOWN_MASK) ===
     STREAM_METADATA_KNOWN_MASK
   ) {
-    mime = compositeMetadata.slice(toSkip, toSkip + 1);
+    mime = compositeMetadata.subarray(toSkip, toSkip + 1);
     toSkip += 1;
   } else {
     // M flag unset, remaining 7 bits are the length of the mime
@@ -123,7 +125,7 @@ export function decodeMimeAndContentBuffersSlices(
       // re-applying the byte mask. The easiest way is to include the initial byte
       // and have further decoding ignore the first byte. 1 byte buffer == id, 2+ byte
       // buffer == full mime string.
-      mime = compositeMetadata.slice(toSkip, toSkip + mimeLength + 1);
+      mime = compositeMetadata.subarray(toSkip, toSkip + mimeLength + 1);
 
       // we thus need to skip the bytes we just sliced, but not the flag/length byte
       // which was already skipped in initial read
@@ -137,10 +139,13 @@ export function decodeMimeAndContentBuffersSlices(
 
   if (compositeMetadata.byteLength >= toSkip + 3) {
     // ensures the length medium can be read
-    const metadataLength = readUInt24BE(compositeMetadata, toSkip);
+    const metadataLength = Bytes.readUInt24BE(compositeMetadata, toSkip);
     toSkip += 3;
     if (compositeMetadata.byteLength >= metadataLength + toSkip) {
-      const metadata = compositeMetadata.slice(toSkip, toSkip + metadataLength);
+      const metadata = compositeMetadata.subarray(
+        toSkip,
+        toSkip + metadataLength
+      );
       return [mime, metadata];
     } else {
       throw new Error(
@@ -155,7 +160,7 @@ export function decodeMimeAndContentBuffersSlices(
 }
 
 export function decodeMimeTypeFromMimeBuffer(
-  flyweightMimeBuffer: Buffer
+  flyweightMimeBuffer: Uint8Array
 ): string {
   if (flyweightMimeBuffer.length < 2) {
     throw new Error("Unable to decode explicit MIME type");
@@ -163,22 +168,21 @@ export function decodeMimeTypeFromMimeBuffer(
   // the encoded length is assumed to be kept at the start of the buffer
   // but also assumed to be irrelevant because the rest of the slice length
   // actually already matches _decoded_length
-  return flyweightMimeBuffer.toString("ascii", 1);
+  return Bytes.readAscii(flyweightMimeBuffer, 1, flyweightMimeBuffer.length);
 }
 
 export function encodeCustomMetadataHeader(
   customMime: string,
   metadataLength: number
-): Buffer {
+): Uint8Array {
   // allocate one byte + the length of the mimetype
-  const metadataHeader: Buffer = Buffer.allocUnsafe(4 + customMime.length);
+  const metadataHeader: Uint8Array = Bytes.alloc(4 + customMime.length);
+  // Bytes.alloc zero-fills, so no explicit clear is needed.
 
-  // fill the buffer to clear previous memory
-  metadataHeader.fill(0);
-
-  // write the custom mime in UTF8 but validate it is all ASCII-compatible
-  // (which produces the correct result since ASCII chars are still encoded on 1 byte in UTF8)
-  const customMimeLength: number = metadataHeader.write(customMime, 1);
+  // write the custom mime as ASCII (1 byte per char) and validate it below;
+  // ASCII chars are encoded on 1 byte, matching the header layout.
+  Bytes.writeAscii(metadataHeader, customMime, 1);
+  const customMimeLength: number = customMime.length;
   if (!isAscii(metadataHeader, 1)) {
     throw new Error("Custom mime type must be US_ASCII characters only");
   }
@@ -189,9 +193,9 @@ export function encodeCustomMetadataHeader(
   }
   // encoded length is one less than actual length, since 0 is never a valid length, which gives
   // wider representation range
-  metadataHeader.writeUInt8(customMimeLength - 1);
+  Bytes.writeUInt8(metadataHeader, customMimeLength - 1, 0);
 
-  writeUInt24BE(metadataHeader, metadataLength, customMimeLength + 1);
+  Bytes.writeUInt24BE(metadataHeader, metadataLength, customMimeLength + 1);
 
   return metadataHeader;
 }
@@ -199,17 +203,17 @@ export function encodeCustomMetadataHeader(
 export function encodeWellKnownMetadataHeader(
   mimeType: number,
   metadataLength: number
-): Buffer {
-  const buffer: Buffer = Buffer.allocUnsafe(4);
+): Uint8Array {
+  const buffer: Uint8Array = Bytes.alloc(4);
 
-  buffer.writeUInt8(mimeType | STREAM_METADATA_KNOWN_MASK);
-  writeUInt24BE(buffer, metadataLength, 1);
+  Bytes.writeUInt8(buffer, mimeType | STREAM_METADATA_KNOWN_MASK, 0);
+  Bytes.writeUInt24BE(buffer, metadataLength, 1);
 
   return buffer;
 }
 
 export function* decodeCompositeMetadata(
-  buffer: Buffer
+  buffer: Uint8Array
 ): Generator<Entry, void, any> {
   const length = buffer.byteLength;
   let entryIndex = 0;
@@ -249,7 +253,7 @@ export interface Entry {
    *
    * @return the un-decoded content of the {@link Entry}
    */
-  readonly content: Buffer;
+  readonly content: Uint8Array;
 
   /**
    * Returns the MIME type of the entry, if it can be decoded.
@@ -261,14 +265,14 @@ export interface Entry {
 
 export class ExplicitMimeTimeEntry implements Entry {
   constructor(
-    readonly content: Buffer,
+    readonly content: Uint8Array,
     readonly type: string
   ) {}
 }
 
 export class ReservedMimeTypeEntry implements Entry {
   constructor(
-    readonly content: Buffer,
+    readonly content: Uint8Array,
     readonly type: number
   ) {}
 
@@ -283,7 +287,7 @@ export class ReservedMimeTypeEntry implements Entry {
 
 export class WellKnownMimeTypeEntry implements Entry {
   constructor(
-    readonly content: Buffer,
+    readonly content: Uint8Array,
     readonly type: WellKnownMimeType
   ) {}
 
@@ -292,17 +296,17 @@ export class WellKnownMimeTypeEntry implements Entry {
   }
 }
 
-function decodeMimeIdFromMimeBuffer(mimeBuffer: Buffer): number {
+function decodeMimeIdFromMimeBuffer(mimeBuffer: Uint8Array): number {
   if (!isWellKnownMimeType(mimeBuffer)) {
     return WellKnownMimeType.UNPARSEABLE_MIME_TYPE.identifier;
   }
-  return mimeBuffer.readInt8() & STREAM_METADATA_LENGTH_MASK;
+  return Bytes.readInt8(mimeBuffer, 0) & STREAM_METADATA_LENGTH_MASK;
 }
 
 function computeNextEntryIndex(
   currentEntryIndex: number,
-  headerSlice: Buffer,
-  contentSlice: Buffer
+  headerSlice: Uint8Array,
+  contentSlice: Uint8Array
 ): number {
   return (
     currentEntryIndex +
@@ -312,14 +316,14 @@ function computeNextEntryIndex(
   );
 }
 
-function isWellKnownMimeType(header: Buffer): boolean {
+function isWellKnownMimeType(header: Uint8Array): boolean {
   return header.byteLength === 1;
 }
 
 const STREAM_METADATA_KNOWN_MASK = 0x80; // 1000 0000
 const STREAM_METADATA_LENGTH_MASK = 0x7f; // 0111 1111
 
-function isAscii(buffer: Buffer, offset: number): boolean {
+function isAscii(buffer: Uint8Array, offset: number): boolean {
   let isAscii = true;
   for (let i = offset, length = buffer.length; i < length; i++) {
     if (buffer[i] > 127) {

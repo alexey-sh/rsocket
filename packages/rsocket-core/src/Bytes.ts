@@ -36,6 +36,11 @@ export function readUInt8(buffer: Uint8Array, offset: number): number {
   return buffer[offset];
 }
 
+export function readInt8(buffer: Uint8Array, offset: number): number {
+  const value = buffer[offset];
+  return value & 0x80 ? value - 0x100 : value;
+}
+
 export function readUInt16BE(buffer: Uint8Array, offset: number): number {
   return (buffer[offset] << 8) | buffer[offset + 1];
 }

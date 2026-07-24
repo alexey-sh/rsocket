@@ -16,14 +16,14 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       const encoded = encodeCompositeMetadata(metadata);
 
       // 122 | 128
-      const maskedId = encoded.readUInt8(0);
+      const maskedId = encoded[0];
       const length = readUInt24BE(encoded, 1);
       const value = encoded.slice(4, encoded.length);
 
       expect(maskedId).toBe(250);
       expect(length).toBe(4);
       expect(value.length).toBe(4);
-      expect(value.toString("utf-8")).toBe("test");
+      expect(Buffer.from(value).toString("utf-8")).toBe("test");
     });
 
     it("handles WellKnownMimeType identifiers as keys", () => {
@@ -33,14 +33,14 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       const encoded = encodeCompositeMetadata(metadata);
 
       // 122 | 128
-      const maskedId = encoded.readUInt8(0);
+      const maskedId = encoded[0];
       const length = readUInt24BE(encoded, 1);
       const value = encoded.slice(4, encoded.length);
 
       expect(maskedId).toBe(250);
       expect(length).toBe(4);
       expect(value.length).toBe(4);
-      expect(value.toString("utf-8")).toBe("test");
+      expect(Buffer.from(value).toString("utf-8")).toBe("test");
     });
 
     it("handles custom mimetypes as keys", () => {
@@ -49,7 +49,7 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
 
       const encoded = encodeCompositeMetadata(metadata);
 
-      const mimeTypeLengthMinusOne = encoded.readUInt8(0);
+      const mimeTypeLengthMinusOne = encoded[0];
       const start = 1;
       const end = mimeTypeLengthMinusOne + 2;
       const mimeType = encoded.slice(start, end);
@@ -57,9 +57,9 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       const metadataValue = encoded.slice(encoded.length - metadataLength);
 
       expect(mimeTypeLengthMinusOne).toBe(5);
-      expect(mimeType.toString("utf-8")).toBe("custom");
+      expect(Buffer.from(mimeType).toString("utf-8")).toBe("custom");
       expect(metadataLength).toBe(4);
-      expect(metadataValue.toString("utf-8")).toBe("test");
+      expect(Buffer.from(metadataValue).toString("utf-8")).toBe("test");
     });
 
     it("handles mimetype value as function", () => {
@@ -68,7 +68,7 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
 
       const encoded = encodeCompositeMetadata(metadata);
 
-      const mimeTypeLengthMinusOne = encoded.readUInt8(0);
+      const mimeTypeLengthMinusOne = encoded[0];
       const start = 1;
       const end = mimeTypeLengthMinusOne + 2;
       const mimeType = encoded.slice(start, end);
@@ -76,9 +76,9 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       const metadataValue = encoded.slice(encoded.length - metadataLength);
 
       expect(mimeTypeLengthMinusOne).toBe(5);
-      expect(mimeType.toString("utf-8")).toBe("custom");
+      expect(Buffer.from(mimeType).toString("utf-8")).toBe("custom");
       expect(metadataLength).toBe(4);
-      expect(metadataValue.toString("utf-8")).toBe("test");
+      expect(Buffer.from(metadataValue).toString("utf-8")).toBe("test");
     });
   });
 
@@ -89,28 +89,28 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       ]);
 
       // 122 | 128
-      const maskedId = encoded.readUInt8(0);
+      const maskedId = encoded[0];
       const length = readUInt24BE(encoded, 1);
       const value = encoded.slice(4, encoded.length);
 
       expect(maskedId).toBe(250);
       expect(length).toBe(4);
       expect(value.length).toBe(4);
-      expect(value.toString("utf-8")).toBe("test");
+      expect(Buffer.from(value).toString("utf-8")).toBe("test");
     });
 
     it("handles WellKnownMimeType identifiers as keys", () => {
       const encoded = encodeCompositeMetadata([[122, Buffer.from("test")]]);
 
       // 122 | 128
-      const maskedId = encoded.readUInt8(0);
+      const maskedId = encoded[0];
       const length = readUInt24BE(encoded, 1);
       const value = encoded.slice(4, encoded.length);
 
       expect(maskedId).toBe(250);
       expect(length).toBe(4);
       expect(value.length).toBe(4);
-      expect(value.toString("utf-8")).toBe("test");
+      expect(Buffer.from(value).toString("utf-8")).toBe("test");
     });
 
     it("handles custom mimetypes as keys", () => {
@@ -118,7 +118,7 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
         ["custom", Buffer.from("test")],
       ]);
 
-      const mimeTypeLengthMinusOne = encoded.readUInt8(0);
+      const mimeTypeLengthMinusOne = encoded[0];
       const start = 1;
       const end = mimeTypeLengthMinusOne + 2;
       const mimeType = encoded.slice(start, end);
@@ -126,9 +126,9 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       const metadataValue = encoded.slice(encoded.length - metadataLength);
 
       expect(mimeTypeLengthMinusOne).toBe(5);
-      expect(mimeType.toString("utf-8")).toBe("custom");
+      expect(Buffer.from(mimeType).toString("utf-8")).toBe("custom");
       expect(metadataLength).toBe(4);
-      expect(metadataValue.toString("utf-8")).toBe("test");
+      expect(Buffer.from(metadataValue).toString("utf-8")).toBe("test");
     });
 
     it("handles mimetype value as function", () => {
@@ -136,7 +136,7 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
         ["custom", () => Buffer.from("test")],
       ]);
 
-      const mimeTypeLengthMinusOne = encoded.readUInt8(0);
+      const mimeTypeLengthMinusOne = encoded[0];
       const start = 1;
       const end = mimeTypeLengthMinusOne + 2;
       const mimeType = encoded.slice(start, end);
@@ -144,9 +144,9 @@ describe("encodeCompositeMetadata encodes the metadata", () => {
       const metadataValue = encoded.slice(encoded.length - metadataLength);
 
       expect(mimeTypeLengthMinusOne).toBe(5);
-      expect(mimeType.toString("utf-8")).toBe("custom");
+      expect(Buffer.from(mimeType).toString("utf-8")).toBe("custom");
       expect(metadataLength).toBe(4);
-      expect(metadataValue.toString("utf-8")).toBe("test");
+      expect(Buffer.from(metadataValue).toString("utf-8")).toBe("test");
     });
   });
 });

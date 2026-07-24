@@ -33,7 +33,7 @@ describe("encodeAndAddCustomMetadata", () => {
     const expectedPayloadLength24 = "000004";
     const expectedHeader = `${expectedHeaderLength8}${c}${u}${s}${t}${o}${m}${expectedPayloadLength24}`;
     const expectedPayload = `${hex["1"]}${hex["2"]}${hex["3"]}${hex["4"]}`;
-    expect(metadata.toString("hex")).toBe(
+    expect(Buffer.from(metadata).toString("hex")).toBe(
       `${expectedHeader}${expectedPayload}`
     );
   });

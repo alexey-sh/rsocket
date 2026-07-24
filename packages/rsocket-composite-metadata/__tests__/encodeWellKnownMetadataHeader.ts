@@ -9,7 +9,7 @@ describe("encodeWellKnownMetadataHeader", () => {
       WellKnownMimeType.APPLICATION_JSON.identifier,
       WellKnownMimeType.APPLICATION_JSON.toString().length
     );
-    const actual = header.toJSON().data;
+    const actual = Array.from(header);
     expect(actual).toMatchSnapshot();
   });
 });

@@ -15,6 +15,7 @@
  */
 
 export * from "./Codecs";
+export * as Bytes from "./Bytes";
 export * from "./Common";
 export * from "./Deferred";
 export * from "./Errors";
