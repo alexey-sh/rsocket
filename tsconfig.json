@@ -1,7 +1,8 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    // No baseUrl: since TS 5.4 `paths` resolves relative to this config's
+    // directory, and baseUrl is deprecated in TS 6 (removed in TS 7).
     // ts-jest resolves this config for tests (builds use tsconfig.build.json).
     // noEmitOnError:false lets ts-jest report type errors per file instead of
     // skipping emit for the whole program when any single test file errors.

@@ -5,8 +5,22 @@
   "engines": {
     "node": ">=22"
   },
-  "main": "dist/index",
-  "types": "dist/index",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
   "files": [
     "dist",
     "LICENSE",
@@ -18,7 +32,7 @@
   "scripts": {
     "build": "yarn run clean && yarn run compile",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "compile": "tsup",
     "prepublishOnly": "yarn run build",
     "test": "yarn jest"
   },
