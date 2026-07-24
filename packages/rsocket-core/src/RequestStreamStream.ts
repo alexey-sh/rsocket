@@ -379,8 +379,12 @@ export class RequestStreamResponderStream
         errorMessage = `Unexpected frame type [${frame.type}] during reassembly`;
       }
     } else if (frame.type === FrameTypes.REQUEST_N) {
-      this.receiver.request(frame.requestN);
-      return;
+      if (frame.requestN < 1) {
+        errorMessage = `Invalid REQUEST_N frame: requestN must be greater than 0, but got [${frame.requestN}]`;
+      } else {
+        this.receiver.request(frame.requestN);
+        return;
+      }
     } else if (frame.type === FrameTypes.EXT) {
       this.receiver.onExtension(
         frame.extendedType,

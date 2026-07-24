@@ -223,6 +223,11 @@ export class RequestChannelRequesterStream
           break;
         }
 
+        if (frame.requestN < 1) {
+          errorMessage = `Invalid REQUEST_N frame: requestN must be greater than 0, but got [${frame.requestN}]`;
+          break;
+        }
+
         this.receiver.request(frame.requestN);
         return;
       }
@@ -619,6 +624,10 @@ export class RequestChannelResponderStream
       case FrameTypes.REQUEST_N: {
         if (!this.receiver || this.hasFragments) {
           errorMessage = `Unexpected frame type [${frameType}] during reassembly`;
+          break;
+        }
+        if (frame.requestN < 1) {
+          errorMessage = `Invalid REQUEST_N frame: requestN must be greater than 0, but got [${frame.requestN}]`;
           break;
         }
         this.receiver.request(frame.requestN);

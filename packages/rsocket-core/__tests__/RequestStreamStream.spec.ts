@@ -663,6 +663,48 @@ describe("RequestStreamStream Test", () => {
         expect(requested).toBe(10);
       });
 
+      it("Errors the stream on a REQUEST_N frame with requestN < 1", () => {
+        const mockStream = new MockStream();
+        const mockHandler = mock<
+          Cancellable & Requestable & OnExtensionSubscriber
+        >();
+        const responder = new RequestStreamResponderStream(
+          1,
+          mockStream,
+          0,
+          () => mockHandler,
+          {
+            type: FrameTypes.REQUEST_STREAM,
+            streamId: 1,
+            requestN: 10,
+            flags: Flags.METADATA,
+            data: Buffer.from("Hello World"),
+            metadata: Buffer.from("World Hello"),
+          }
+        );
+
+        expect(mockStream.handler).toBe(responder);
+
+        responder.handle({
+          type: FrameTypes.REQUEST_N,
+          requestN: 0,
+          streamId: 1,
+          flags: Flags.NONE,
+        });
+
+        // the invalid credit is never applied to the responder's producer
+        expect(mockHandler.request).not.toHaveBeenCalled();
+        // the stream is terminated with an ERROR frame
+        expect(mockStream.frames.pop()).toMatchObject({
+          type: FrameTypes.ERROR,
+          code: ErrorCodes.CANCELED,
+          message:
+            "Invalid REQUEST_N frame: requestN must be greater than 0, but got [0]",
+          streamId: 1,
+        });
+        expect(mockStream.handler).toBeUndefined();
+      });
+
       it("Handler Request and Send Next", () => {
         const mockStream = new MockStream();
         const mockHandler = mock<

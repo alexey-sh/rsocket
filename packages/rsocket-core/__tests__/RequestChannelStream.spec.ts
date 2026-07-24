@@ -486,6 +486,55 @@ describe("RequestChannelStream Test", () => {
         expect(mockStream.handler).toBeUndefined();
       });
 
+      it("Errors the stream on a REQUEST_N frame with requestN < 1", () => {
+        const mockStream = new MockStream();
+        const mockHandler: OnTerminalSubscriber &
+          OnNextSubscriber &
+          OnExtensionSubscriber &
+          Requestable &
+          Cancellable = mock<
+          OnTerminalSubscriber &
+            OnNextSubscriber &
+            OnExtensionSubscriber &
+            Requestable &
+            Cancellable
+        >();
+        const request = new RequestChannelRequesterStream(
+          {
+            data: Buffer.from("Hello"),
+            metadata: Buffer.from(" World"),
+          },
+          false,
+          mockHandler,
+          0,
+          1
+        );
+
+        request.handleReady(1, mockStream);
+
+        request.handle({
+          type: FrameTypes.REQUEST_N,
+          flags: Flags.NONE,
+          streamId: 1,
+          requestN: 0,
+        });
+
+        // the invalid credit is never applied to the local producer
+        expect(mockHandler.request).not.toHaveBeenCalled();
+        // the stream is terminated: CANCEL to the peer, error to the receiver
+        expect(mockStream.frames.pop()).toMatchObject({
+          type: FrameTypes.CANCEL,
+          streamId: 1,
+        });
+        expect(mockHandler.onError).toHaveBeenCalledWith(
+          new RSocketError(
+            ErrorCodes.CANCELED,
+            "Invalid REQUEST_N frame: requestN must be greater than 0, but got [0]"
+          )
+        );
+        expect(mockStream.handler).toBeUndefined();
+      });
+
       it("Sends RequestChannelFrame on onReady event and then cancel", () => {
         const mockStream = new MockStream();
         const mockHandler: OnTerminalSubscriber &
@@ -1285,6 +1334,52 @@ describe("RequestChannelStream Test", () => {
           false,
         ]);
         expect(mockHandler.cancel).not.toHaveBeenCalled();
+      });
+
+      it("Errors the stream on a REQUEST_N frame with requestN < 1", () => {
+        const mockStream = new MockStream();
+        const mockHandler = mock<
+          Cancellable &
+            Requestable &
+            OnExtensionSubscriber &
+            OnTerminalSubscriber &
+            OnNextSubscriber
+        >();
+        const responder = new RequestChannelResponderStream(
+          1,
+          mockStream,
+          0,
+          () => mockHandler,
+          {
+            type: FrameTypes.REQUEST_CHANNEL,
+            streamId: 1,
+            requestN: 10,
+            flags: Flags.METADATA,
+            data: Buffer.from("Hello World"),
+            metadata: Buffer.from("World Hello"),
+          }
+        );
+
+        expect(mockStream.handler).toBe(responder);
+
+        responder.handle({
+          type: FrameTypes.REQUEST_N,
+          requestN: 0,
+          streamId: 1,
+          flags: Flags.NONE,
+        });
+
+        // the invalid credit is never applied to the responder's producer
+        expect(mockHandler.request).not.toHaveBeenCalled();
+        // the stream is terminated with an ERROR frame
+        expect(mockStream.frames.pop()).toMatchObject({
+          type: FrameTypes.ERROR,
+          code: ErrorCodes.CANCELED,
+          message:
+            "Invalid REQUEST_N frame: requestN must be greater than 0, but got [0]",
+          streamId: 1,
+        });
+        expect(mockStream.handler).toBeUndefined();
       });
 
       it("Handler Request and Send Next", () => {
