@@ -1382,6 +1382,47 @@ describe("RequestChannelStream Test", () => {
         expect(mockStream.handler).toBeUndefined();
       });
 
+      it("Errors the stream on a REQUEST_CHANNEL frame with initial requestN < 1", () => {
+        const mockStream = new MockStream();
+        const mockHandler = mock<
+          Cancellable &
+            Requestable &
+            OnExtensionSubscriber &
+            OnTerminalSubscriber &
+            OnNextSubscriber
+        >();
+        let handlerInvoked = false;
+        new RequestChannelResponderStream(
+          1,
+          mockStream,
+          0,
+          () => {
+            handlerInvoked = true;
+            return mockHandler;
+          },
+          {
+            type: FrameTypes.REQUEST_CHANNEL,
+            streamId: 1,
+            requestN: 0,
+            flags: Flags.METADATA,
+            data: Buffer.from("Hello World"),
+            metadata: Buffer.from("World Hello"),
+          }
+        );
+
+        // an invalid initial requestN never reaches the request handler
+        expect(handlerInvoked).toBe(false);
+        // the stream is terminated with an ERROR frame
+        expect(mockStream.frames.pop()).toMatchObject({
+          type: FrameTypes.ERROR,
+          code: ErrorCodes.CANCELED,
+          message:
+            "Invalid REQUEST_CHANNEL frame: initial requestN must be greater than 0, but got [0]",
+          streamId: 1,
+        });
+        expect(mockStream.handler).toBeUndefined();
+      });
+
       it("Handler Request and Send Next", () => {
         const mockStream = new MockStream();
         const mockHandler = mock<

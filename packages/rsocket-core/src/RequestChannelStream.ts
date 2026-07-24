@@ -519,6 +519,18 @@ export class RequestChannelResponderStream
   ) {
     stream.connect(this);
 
+    if (frame.requestN < 1) {
+      // Spec: the initial Request N MUST be > 0. Reject stream-scoped (the
+      // requestN is a signed int32, so over-range values decode negative).
+      this.onError(
+        new RSocketError(
+          ErrorCodes.CANCELED,
+          `Invalid REQUEST_CHANNEL frame: initial requestN must be greater than 0, but got [${frame.requestN}]`
+        )
+      );
+      return;
+    }
+
     if (Flags.hasFollows(frame.flags)) {
       Reassembler.add(this, frame.data, frame.metadata);
       this.initialRequestN = frame.requestN;
