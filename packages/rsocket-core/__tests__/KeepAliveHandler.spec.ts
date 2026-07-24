@@ -61,4 +61,35 @@ describe("KeepAliveHandler", () => {
 
     expect(mockConnection.close).toHaveBeenCalledTimes(0);
   });
+
+  it("Responds to KEEPALIVE(RESPOND) without echoing RESPOND or IGNORE", () => {
+    const mockOutbound = mock<Outbound>();
+    const mockMultiplexerDemultiplexer = mock<
+      Multiplexer & Demultiplexer & FrameHandler & Closeable
+    >({
+      connectionOutbound: mockOutbound,
+    });
+    const mockConnection = mock<DuplexConnection>({
+      multiplexerDemultiplexer: mockMultiplexerDemultiplexer,
+    });
+    const handler = new KeepAliveHandler(mockConnection, 10000);
+
+    const data = Buffer.from("ack-me");
+    handler.handle({
+      type: FrameTypes.KEEPALIVE,
+      streamId: 0,
+      data,
+      flags: Flags.RESPOND | Flags.IGNORE,
+      lastReceivedPosition: 0,
+    });
+
+    // the ack clears RESPOND (no respond-loop) and does not echo IGNORE
+    expect(mockOutbound.send).toHaveBeenCalledWith({
+      type: FrameTypes.KEEPALIVE,
+      streamId: 0,
+      data,
+      flags: Flags.NONE,
+      lastReceivedPosition: 0,
+    });
+  });
 });

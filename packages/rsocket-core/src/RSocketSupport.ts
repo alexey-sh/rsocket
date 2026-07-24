@@ -436,11 +436,14 @@ export class KeepAliveHandler implements FrameHandler {
   handle(frame: KeepAliveFrame): void {
     this.keepAliveLastReceivedMillis = performance.now();
     if (Flags.hasRespond(frame.flags)) {
+      // The ack must not respond-loop (RESPOND cleared) and must not echo any
+      // other inbound flag (e.g. IGNORE) -- KEEPALIVE carries no metadata, so
+      // a fresh Flags.NONE is the correct reply.
       this.outbound.send({
         type: FrameTypes.KEEPALIVE,
         streamId: 0,
         data: frame.data,
-        flags: frame.flags ^ Flags.RESPOND,
+        flags: Flags.NONE,
         lastReceivedPosition: 0,
       });
     }
