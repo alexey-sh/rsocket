@@ -122,6 +122,6 @@ class ServerCloseable extends Deferred {
     }
 
     this.server.close();
-    super.close();
+    super.close(error);
   }
 }
