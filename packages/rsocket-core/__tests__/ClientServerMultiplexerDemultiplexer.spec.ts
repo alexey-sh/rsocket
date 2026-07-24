@@ -5,6 +5,7 @@ import {
   Flags,
   FrameHandler,
   FrameTypes,
+  MAX_STREAM_ID,
   Outbound,
   SetupFrame,
   StreamFrameHandler,
@@ -140,5 +141,65 @@ describe("ClientServerMultiplexerDemultiplexer", function () {
         expect(call1).toMatchSnapshot();
       });
     });
+  });
+});
+
+describe("StreamIdGenerator", () => {
+  function drawNext(
+    generator: StreamIdGenerator,
+    inUse: number[] = []
+  ): number {
+    let assigned = -1;
+    generator.next((id) => {
+      assigned = id;
+      return true;
+    }, inUse);
+    return assigned;
+  }
+
+  it("produces odd ids for a client (seed -1), even ids for a server (seed 0)", () => {
+    const client = StreamIdGenerator.create(-1);
+    expect([drawNext(client), drawNext(client), drawNext(client)]).toEqual([
+      1, 3, 5,
+    ]);
+
+    const server = StreamIdGenerator.create(0);
+    expect([drawNext(server), drawNext(server), drawNext(server)]).toEqual([
+      2, 4, 6,
+    ]);
+  });
+
+  it("does not consume an id when the handler rejects it", () => {
+    const client = StreamIdGenerator.create(-1);
+    expect(drawNext(client)).toBe(1);
+
+    // handler returns false -> currentId is not advanced
+    client.next(() => false, []);
+
+    // the rejected id (3) is offered again on the next draw
+    expect(drawNext(client)).toBe(3);
+  });
+
+  it("wraps a client generator around the 31-bit boundary", () => {
+    // seeded just below the largest odd stream id
+    const client = StreamIdGenerator.create(MAX_STREAM_ID - 2);
+    expect(drawNext(client)).toBe(MAX_STREAM_ID);
+    // next would exceed 2^31-1; wrap to the lowest odd id
+    expect(drawNext(client)).toBe(1);
+    expect(drawNext(client)).toBe(3);
+  });
+
+  it("wraps a server generator to the lowest even id", () => {
+    const server = StreamIdGenerator.create(MAX_STREAM_ID - 3);
+    expect(drawNext(server)).toBe(MAX_STREAM_ID - 1);
+    expect(drawNext(server)).toBe(2);
+    expect(drawNext(server)).toBe(4);
+  });
+
+  it("skips ids still in use when wrapping around", () => {
+    const client = StreamIdGenerator.create(MAX_STREAM_ID - 2);
+    expect(drawNext(client)).toBe(MAX_STREAM_ID);
+    // ids 1 and 3 are still active -> wrap must skip them
+    expect(drawNext(client, [1, 3])).toBe(5);
   });
 });

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { ErrorCodes, Flags, FrameTypes, ResumeFrame, ResumeOkFrame } from ".";
+import {
+  ErrorCodes,
+  Flags,
+  FrameTypes,
+  MAX_STREAM_ID,
+  ResumeFrame,
+  ResumeOkFrame,
+} from ".";
 import { Closeable } from "./Common";
 import { Deferred } from "./Deferred";
 import { RSocketError } from "./Errors";
@@ -44,8 +51,33 @@ export namespace StreamIdGenerator {
   class StreamIdGeneratorImpl implements StreamIdGenerator {
     constructor(private currentId: number) {}
 
-    next(handler: (nextId: number) => boolean): void {
-      const nextId = this.currentId + 2;
+    next(handler: (nextId: number) => boolean, streamIds: Array<number>): void {
+      // Stream IDs advance by 2 to preserve client-odd / server-even parity.
+      // At the 31-bit boundary they wrap around to the lowest ID of that
+      // parity and skip any ID still in use -- otherwise `currentId + 2` would
+      // eventually exceed MAX_STREAM_ID and encode as a negative int32.
+      const parityStart = (this.currentId & 1) === 1 ? 1 : 2;
+      const inUse = new Set<number>();
+      for (const id of streamIds) {
+        inUse.add(Number(id));
+      }
+
+      let nextId = this.currentId + 2;
+      if (nextId > MAX_STREAM_ID) {
+        nextId = parityStart;
+      }
+
+      const firstCandidate = nextId;
+      while (inUse.has(nextId)) {
+        nextId += 2;
+        if (nextId > MAX_STREAM_ID) {
+          nextId = parityStart;
+        }
+        if (nextId === firstCandidate) {
+          // Every stream ID of this parity is in use; nothing can be assigned.
+          return;
+        }
+      }
 
       if (!handler(nextId)) {
         return;
