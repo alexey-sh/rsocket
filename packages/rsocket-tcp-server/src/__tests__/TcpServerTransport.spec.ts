@@ -55,7 +55,8 @@ describe("TcpServerTransport", () => {
       closeable.close();
 
       expect(server.close).toHaveBeenCalledTimes(1);
-      expect(onClose).toHaveBeenCalledWith(undefined);
+      // a clean close forwards no error, so onClose is called with no argument
+      expect(onClose).toHaveBeenCalledWith();
     });
   });
 });

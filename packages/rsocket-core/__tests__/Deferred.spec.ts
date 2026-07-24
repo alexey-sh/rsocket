@@ -14,6 +14,18 @@ describe("Deferred", () => {
     expect(deferred.done).toBe(true);
   });
 
+  it("invokes callbacks registered before a clean close with no argument", () => {
+    const deferred = new Deferred();
+    const cb = jest.fn();
+    deferred.onClose(cb);
+
+    deferred.close();
+
+    // a clean close passes zero arguments, not an explicit undefined
+    expect(cb).toHaveBeenCalledTimes(1);
+    expect(cb).toHaveBeenCalledWith();
+  });
+
   it("invokes a callback registered after close immediately (no error)", () => {
     const deferred = new Deferred();
     deferred.close();

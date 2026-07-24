@@ -44,13 +44,21 @@ export class Deferred implements Closeable {
 
     // Snapshot then release the callbacks so their closures are not retained
     // for the lifetime of this Deferred; any later onClose() registration is
-    // invoked immediately instead of being stored. (callback(undefined) is
-    // equivalent to the previous no-arg call.)
+    // invoked immediately instead of being stored. Preserve the exact call
+    // arity -- a clean close invokes callback() with no argument, which jest
+    // matchers (toHaveBeenCalledWith()) distinguish from callback(undefined).
     const callbacks = this.onCloseCallbacks;
     this.onCloseCallbacks = [];
 
+    if (error) {
+      for (const callback of callbacks) {
+        callback(error);
+      }
+      return;
+    }
+
     for (const callback of callbacks) {
-      callback(error);
+      callback();
     }
   }
 
