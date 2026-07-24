@@ -22,4 +22,20 @@ module.exports = [
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
+  {
+    // rsocket-core is transport-agnostic and browser-neutral: it must not
+    // depend on Node's Buffer. Use Uint8Array + the Bytes helpers (Bytes.ts).
+    // Scoped to source only -- tests and the Node transports may use Buffer.
+    files: ["packages/rsocket-core/src/**/*.ts"],
+    rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "Buffer",
+          message:
+            "rsocket-core must stay browser-neutral: use Uint8Array and the Bytes helpers instead of Buffer.",
+        },
+      ],
+    },
+  },
 ];
