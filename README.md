@@ -3,7 +3,7 @@
 > **This is an independent fork** of [`rsocket/rsocket-js`](https://github.com/rsocket/rsocket-js),
 > continuing the stalled Flow → TypeScript 1.0 rewrite. **See [FORK.md](./FORK.md) for exactly how
 > it differs from upstream** (Node 24, strict TypeScript 6, `Uint8Array` API, dual ESM+CJS, and
-> ~15 protocol fixes).
+> ~20 protocol fixes).
 
 A JavaScript implementation of the [RSocket](https://github.com/rsocket/rsocket)
 protocol intended for use in browsers and/or Node.js. From [rsocket.io](http://rsocket.io/):
@@ -28,7 +28,7 @@ This fork continues the rewrite of rsocket-js from [Flow](https://flow.org/) to
 [#158](https://github.com/rsocket/rsocket-js/issues/158)), and is developed **independently** of
 upstream — no pull requests are sent upstream and upstream releases are not tracked.
 
-Artifacts are **UNSTABLE** and subject to breaking changes while in preview. A full, side-by-side
+This is a young fork — breaking changes are still possible between releases. A full, side-by-side
 comparison with upstream lives in **[FORK.md](./FORK.md)**.
 
 **For sources related to `0.x.x` versions, see the upstream [master](https://github.com/rsocket/rsocket-js/tree/master) branch.**

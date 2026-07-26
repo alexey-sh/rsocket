@@ -7,12 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `rsocket-js` is a JavaScript/TypeScript implementation of the [RSocket](https://rsocket.io/)
 protocol (Reactive Streams semantics over an async binary transport, for browsers and Node.js).
 
-This branch (`1.0.x-alpha`) is a **ground-up rewrite from Flow to TypeScript** and is published
-as **UNSTABLE / preview** — breaking changes are expected. The `0.x.x` sources live on the
-`master` branch and are unrelated to work here. See issue #158 for rewrite context.
+This repository is a **ground-up rewrite from Flow to TypeScript** — an independent fork continuing
+upstream issue #158. It is a young fork, so breaking changes are still possible between releases; the
+upstream `0.x.x` sources are unrelated to work here.
 
-It is a **Lerna + Yarn-workspaces monorepo** with **independently versioned** packages under
-`packages/*`, each published separately to NPM.
+It is a **Lerna + Yarn-workspaces monorepo** with packages under `packages/*` (fixed-versioned at
+`2.0.0`), each published separately to NPM.
 
 ## Protocol reference
 
@@ -109,4 +109,4 @@ The best source of end-to-end usage patterns for each interaction model and tran
 
 ## Releasing
 
-Independent versioning via `lerna version` (creates git tags per `pkg@version`; tags are **not** auto-pushed). Publishing is done by manually triggering the `Test, Build, Release` GitHub workflow, which only publishes versions not already on NPM. Allowed release branches: `main`, `1.0.x-alpha`. See `RELEASE.md`.
+Fixed versioning via `lerna version` (all packages share one version; creates git tags per `pkg@version`; tags are **not** auto-pushed). Publishing is done by manually triggering the `Test, Build, Release` GitHub workflow, which only publishes versions not already on NPM. Allowed release branch: `main`. See `RELEASE.md`.

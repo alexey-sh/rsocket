@@ -1,6 +1,6 @@
 {
   "name": "rsocket-examples",
-  "version": "1.0.0-alpha.4",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "private": true,
   "files": [
@@ -32,13 +32,13 @@
     "graphql": "^16.11.0",
     "graphql-tag": "^2.12.7",
     "graphql-subscriptions": "^3.0.0",
-    "rsocket-adapter-rxjs": "^1.0.0-alpha.4",
-    "rsocket-composite-metadata": "^1.0.0-alpha.3",
-    "rsocket-core": "^1.0.0-alpha.3",
-    "rsocket-tcp-client": "^1.0.0-alpha.3",
-    "rsocket-tcp-server": "^1.0.0-alpha.3",
-    "rsocket-websocket-client": "^1.0.0-alpha.3",
-    "rsocket-websocket-server": "^1.0.0-alpha.3",
+    "rsocket-adapter-rxjs": "^2.0.0",
+    "rsocket-composite-metadata": "^2.0.0",
+    "rsocket-core": "^2.0.0",
+    "rsocket-tcp-client": "^2.0.0",
+    "rsocket-tcp-server": "^2.0.0",
+    "rsocket-websocket-client": "^2.0.0",
+    "rsocket-websocket-server": "^2.0.0",
     "rxjs": "^7.8.2",
     "ws": "^8.21.0"
   },

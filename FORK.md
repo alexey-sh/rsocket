@@ -6,9 +6,9 @@
 [#158](https://github.com/rsocket/rsocket-js/issues/158)).
 
 We develop **independently**: we do not open pull requests against upstream and do not track
-upstream releases. Packages remain `1.0.0-alpha.*` and **UNSTABLE** — breaking changes are
-expected — and the library will eventually be published under a **new npm scope** (the bare
-`rsocket-*` names are owned upstream).
+upstream releases. Packages are versioned `2.0.0` and will be published under a **new npm scope**
+(the bare `rsocket-*` names are owned upstream). This is a young fork — breaking changes are still
+possible between releases.
 
 Everything below is what changed relative to the upstream `1.0.x-alpha` branch this fork was
 started from.
