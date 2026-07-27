@@ -9,7 +9,7 @@ module.exports = [
     ignores: ["**/dist/**", "**/build/**", "**/coverage/**"],
   },
   {
-    files: ["**/*.js", "**/*.ts"],
+    files: ["**/*.js", "**/*.ts", "**/*.mts"],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: "latest",

@@ -31,9 +31,9 @@ Node is pinned to **v24** (`.nvmrc`, `engines: >=22`); use `nvm use`. Package ma
 
 From the repo root:
 
-- `yarn build` — build all packages (`lerna run build` → `tsup` per package into `dist/`; dual CJS+ESM + `.d.ts`).
+- `yarn build` — build all packages (`lerna run build` → per package: `tsc --noEmit` then `tsdown` into `dist/`; dual CJS+ESM + `.d.ts`).
 - `yarn test` — test all packages. **Note:** the `pretest` hook runs `yarn clean` first (wipes all `dist/` and `coverage/`).
-- `yarn lint` / `yarn lint:fix` — ESLint over all `js,ts`. Linting is effectively **Prettier as an error rule**, so `lint:fix` = format.
+- `yarn lint` / `yarn lint:fix` — ESLint over all `js,ts,mts`. Linting is effectively **Prettier as an error rule**, so `lint:fix` = format.
 - `yarn clean` — remove all `dist/` output and `coverage/`.
 - `yarn check:exports` — build, then validate every package's `exports`/types with `@arethetypeswrong/cli`.
 
@@ -41,6 +41,7 @@ Per-package (avoids the clean-everything pretest hook):
 
 - `yarn workspace @rsocket-ts/core test` — test one package.
 - `yarn workspace @rsocket-ts/core build` — build one package.
+- `yarn workspace @rsocket-ts/core typecheck` — type-check one package without building.
 
 Single test file / single test (run inside the package dir, since the package `test` script is just `yarn jest`):
 
@@ -54,7 +55,9 @@ Run an example (from `@rsocket-ts/examples`, uses `ts-node`):
 ### Important build/test wiring
 
 - **Tests import source, not build output.** Each package's `jest.config.ts` uses `ts-jest` + a `moduleNameMapper` that mirrors the root `tsconfig.json` `paths`, mapping `@rsocket-ts/*` → `packages/rsocket-*/src`. So cross-package imports resolve to live TypeScript source during tests/dev, and to compiled `dist/` only after `yarn build`. You do **not** need to build dependencies before testing a package.
-- Builds use `tsup` (esbuild); the `.d.ts` step type-checks against `tsconfig.build.json`, so a type error there fails the build.
+- Builds use **tsdown** (rolldown). Shared config lives in `tsdown.base.mts`; each package's `tsdown.config.mts` just re-exports it, so tsdown runs with the package dir as cwd. The `.mts` extension is deliberate — Node loads these configs natively, and `.ts` in a package without `"type": "module"` triggers a reparse warning.
+- **The bundler does not type-check.** tsdown's `.d.ts` step emits declarations without reporting semantic errors, so each package's `build` runs `typecheck` (`tsc -p tsconfig.build.json --noEmit`) first. `isolatedModules` is on: rolldown rejects a type re-exported as a value (`export { SomeType }` → "Missing export"), and this makes tsc flag it first as TS1205.
+- Building a package needs its `@rsocket-ts/*` dependencies built first (they resolve through `dist/`, not `paths`); `lerna run build` handles the ordering.
 - Only 6 packages have tests: `@rsocket-ts/core`, `@rsocket-ts/tcp-client`, `@rsocket-ts/tcp-server`, `@rsocket-ts/websocket-client`, `@rsocket-ts/websocket-server`, `@rsocket-ts/composite-metadata`. The rest (`@rsocket-ts/messaging`, `@rsocket-ts/adapter-rxjs`, both `graphql-*`, `examples`) have **no test suite** — verify changes to them via examples or by building.
 
 ## Architecture

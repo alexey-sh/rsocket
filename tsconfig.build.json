@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    // tsup's .d.ts rollup unconditionally injects `baseUrl: "."`, which TS 6
-    // deprecates (TS5101). We don't use baseUrl ourselves; this silences that
-    // one injected option until TS 7 / a tsup fix drops it.
-    "ignoreDeprecations": "6.0",
     "module": "commonjs",
     "target": "ES2022",
     "sourceMap": true,
@@ -12,12 +8,13 @@
     "esModuleInterop": true,
     "types": ["node", "jest"],
     "declaration": true,
+    // Each package's `typecheck` script runs tsc over this config, and the
+    // build bundles with rolldown (via tsdown) — which resolves exports across
+    // module boundaries and rejects a type re-exported as a value. Keep tsc the
+    // first thing to complain about that.
+    "isolatedModules": true,
     "resolveJsonModule": true,
     "strict": true
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/__tests__"
-  ]
+  "exclude": ["node_modules", "dist", "**/__tests__"]
 }

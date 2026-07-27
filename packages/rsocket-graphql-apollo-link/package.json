@@ -30,9 +30,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "yarn run clean && yarn run typecheck && yarn run compile",
     "clean": "rimraf ./dist",
-    "compile": "tsup",
+    "compile": "tsdown",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "prepublishOnly": "yarn run build",
     "test": "echo \"Error: no test specified\" && exit 0"
   },

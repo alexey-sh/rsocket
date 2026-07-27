@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export { makeRSocketLink, makeRSocketLinkConfig } from "./RSocketLink";
+export { makeRSocketLink, type makeRSocketLinkConfig } from "./RSocketLink";
 export { RSocketQueryLink } from "./RSocketQueryLink";
 export { RSocketSubscriptionLink } from "./RSocketSubscriptionLink";

@@ -7,6 +7,11 @@
     // noEmitOnError:false lets ts-jest report type errors per file instead of
     // skipping emit for the whole program when any single test file errors.
     "noEmitOnError": false,
+    // ts-jest passes moduleResolution explicitly, and `module: commonjs` makes
+    // that node10 — deprecated in TS 6, which ts-jest surfaces as a fatal
+    // TS5107 per test suite. Only the test path needs this; the tsdown build
+    // never sets moduleResolution itself.
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@rsocket-ts/*": [
         "./packages/rsocket-*/src"
