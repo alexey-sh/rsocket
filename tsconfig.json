@@ -9,7 +9,7 @@
     "noEmitOnError": false,
     "paths": {
       "@rsocket-ts/*": [
-        "packages/rsocket-*/src"
+        "./packages/rsocket-*/src"
       ]
     }
   }
