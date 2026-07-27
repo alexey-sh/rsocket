@@ -1,6 +1,6 @@
 {
   "name": "@rsocket-ts/tcp-server",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=22"
@@ -38,7 +38,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@rsocket-ts/core": "^2.0.0"
+    "@rsocket-ts/core": "^2.0.1"
   },
   "devDependencies": {
     "rimraf": "^6.1.3",
