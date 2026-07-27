@@ -12,7 +12,7 @@
   "scripts": {
     "build": "lerna run build",
     "clean": "lerna run clean && rimraf ./coverage",
-    "pub": "lerna publish",
+    "pub": "bash scripts/publish.sh",
     "pretest": "yarn clean",
     "test": "lerna run test",
     "lint": "eslint .",
