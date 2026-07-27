@@ -1,3 +1,10 @@
+> [!IMPORTANT]
+> **This repository has moved to [`rsocket-ts/rsocket-ts`](https://github.com/rsocket-ts/rsocket-ts).**
+>
+> This copy is archived and read-only. It stays online because the READMEs inside already-published
+> `@rsocket-ts/*` npm tarballs link here, and those tarballs are immutable. All development, issues
+> and releases happen at the new home.
+
 # @rsocket-ts — an independent [rsocket-js](https://github.com/rsocket/rsocket-js) fork
 
 > **This is an independent fork** of [`rsocket/rsocket-js`](https://github.com/rsocket/rsocket-js),
