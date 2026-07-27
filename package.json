@@ -1,6 +1,6 @@
 {
-  "name": "rsocket-js",
-  "description": "A JavaScript implementation of the RSocket protocol (https://github.com/rsocket/rsocket).",
+  "name": "@rsocket-ts/monorepo",
+  "description": "The @rsocket-ts monorepo root (private; individual packages publish under @rsocket-ts/*).",
   "private": true,
   "license": "Apache-2.0",
   "workspaces": [
