@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { FrameTypes } from "rsocket-core";
+import { FrameTypes } from "@rsocket-ts/core";
 import { WebsocketDuplexConnection } from "../WebsocketDuplexConnection";
 
 function mockDuplex(): any {

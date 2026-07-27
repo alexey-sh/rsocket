@@ -1,5 +1,5 @@
 {
-  "name": "rsocket-adapter-rxjs",
+  "name": "@rsocket-ts/adapter-rxjs",
   "version": "2.0.0",
   "license": "Apache-2.0",
   "engines": {
@@ -36,8 +36,8 @@
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "dependencies": {
-    "rsocket-core": "^2.0.0",
-    "rsocket-messaging": "^2.0.0",
+    "@rsocket-ts/core": "^2.0.0",
+    "@rsocket-ts/messaging": "^2.0.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {

@@ -23,12 +23,12 @@ import {
   Payload,
   RSocketConnector,
   RSocketServer,
-} from "rsocket-core";
+} from "@rsocket-ts/core";
 import { bytesToUtf8 } from "../shared/bytesToUtf8";
 import { exit } from "process";
 import Logger from "../shared/logger";
-import { TcpServerTransport } from "rsocket-tcp-server";
-import { TcpClientTransport } from "rsocket-tcp-client";
+import { TcpServerTransport } from "@rsocket-ts/tcp-server";
+import { TcpClientTransport } from "@rsocket-ts/tcp-client";
 
 function makeServer() {
   return new RSocketServer({

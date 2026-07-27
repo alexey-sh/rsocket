@@ -19,7 +19,7 @@
 import {
   encodeCompositeMetadata,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 import {
   Bytes,
   Cancellable,
@@ -28,8 +28,8 @@ import {
   OnTerminalSubscriber,
   Requestable,
   RSocket,
-} from "rsocket-core";
-import { Codec } from "rsocket-messaging";
+} from "@rsocket-ts/core";
+import { Codec } from "@rsocket-ts/messaging";
 import {
   asyncScheduler,
   concatMap,

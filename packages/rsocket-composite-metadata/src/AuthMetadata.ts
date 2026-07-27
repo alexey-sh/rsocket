@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Bytes } from "rsocket-core";
+import { Bytes } from "@rsocket-ts/core";
 import { WellKnownAuthType } from "./WellKnownAuthType";
 
 const authTypeIdBytesLength = 1;

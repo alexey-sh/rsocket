@@ -1,8 +1,8 @@
 import {
   encodeAndAddWellKnownMetadata,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
-import { readUInt24BE } from "rsocket-core";
+} from "@rsocket-ts/composite-metadata";
+import { readUInt24BE } from "@rsocket-ts/core";
 
 describe("encodeWellKnownMetadataHeader", () => {
   it("encodes the header as per spec when WellKnownMimeType given", () => {

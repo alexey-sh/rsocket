@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Bytes, RSocket, RSocketConnector } from "rsocket-core";
-import { TcpClientTransport } from "rsocket-tcp-client";
+import { Bytes, RSocket, RSocketConnector } from "@rsocket-ts/core";
+import { TcpClientTransport } from "@rsocket-ts/tcp-client";
 import { exit } from "process";
 
 function makeConnector() {

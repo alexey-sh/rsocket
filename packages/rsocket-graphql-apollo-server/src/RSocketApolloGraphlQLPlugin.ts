@@ -4,7 +4,7 @@ import {
   GraphQLServerContext,
   GraphQLServerListener,
 } from "@apollo/server";
-import { RSocket } from "rsocket-core";
+import { RSocket } from "@rsocket-ts/core";
 import { RSocketApolloServer } from "./RSocketApolloServer";
 
 type RSocketApolloGraphlQLPluginOptions = {

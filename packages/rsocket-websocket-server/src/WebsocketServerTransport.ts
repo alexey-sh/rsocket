@@ -24,7 +24,7 @@ import {
   Multiplexer,
   Outbound,
   ServerTransport,
-} from "rsocket-core";
+} from "@rsocket-ts/core";
 import { WebSocket, WebSocketServer, createWebSocketStream } from "ws";
 import { WebsocketDuplexConnection } from "./WebsocketDuplexConnection";
 

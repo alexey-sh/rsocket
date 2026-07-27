@@ -1,9 +1,9 @@
-import { Bytes, Payload } from "rsocket-core";
+import { Bytes, Payload } from "@rsocket-ts/core";
 import {
   decodeCompositeMetadata,
   decodeRoutes,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 import MESSAGE_RSOCKET_ROUTING = WellKnownMimeType.MESSAGE_RSOCKET_ROUTING;
 
 const APPLICATION_GRAPHQL_JSON = "application/graphql+json";

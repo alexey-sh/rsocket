@@ -25,17 +25,17 @@ import {
   RSocketConnector,
   RSocketError,
   RSocketServer,
-} from "rsocket-core";
+} from "@rsocket-ts/core";
 import { bytesToUtf8 } from "./shared/bytesToUtf8";
-import { TcpClientTransport } from "rsocket-tcp-client";
-import { TcpServerTransport } from "rsocket-tcp-server";
+import { TcpClientTransport } from "@rsocket-ts/tcp-client";
+import { TcpServerTransport } from "@rsocket-ts/tcp-server";
 import {
   decodeCompositeMetadata,
   decodeRoutes,
   encodeCompositeMetadata,
   encodeRoute,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 import { exit } from "process";
 import MESSAGE_RSOCKET_ROUTING = WellKnownMimeType.MESSAGE_RSOCKET_ROUTING;
 import Logger from "./shared/logger";

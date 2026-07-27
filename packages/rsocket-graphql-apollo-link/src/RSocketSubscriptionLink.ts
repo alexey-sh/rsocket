@@ -19,13 +19,13 @@
 import { ApolloLink, Observable } from "@apollo/client";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { PartialObserver } from "rxjs";
-import { Bytes, MAX_REQUEST_COUNT, Payload, RSocket } from "rsocket-core";
+import { Bytes, MAX_REQUEST_COUNT, Payload, RSocket } from "@rsocket-ts/core";
 import { ExecutionResult, print } from "graphql";
 import {
   encodeCompositeMetadata,
   encodeRoutes,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 
 type SubscribeOperation = {
   query: string;

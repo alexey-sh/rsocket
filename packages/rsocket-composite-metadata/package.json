@@ -1,5 +1,5 @@
 {
-  "name": "rsocket-composite-metadata",
+  "name": "@rsocket-ts/composite-metadata",
   "version": "2.0.0",
   "license": "Apache-2.0",
   "engines": {
@@ -36,7 +36,7 @@
     "test": "yarn jest"
   },
   "dependencies": {
-    "rsocket-core": "^2.0.0"
+    "@rsocket-ts/core": "^2.0.0"
   },
   "devDependencies": {
     "rimraf": "^6.1.3",

@@ -20,8 +20,8 @@ import {
   OnNextSubscriber,
   OnTerminalSubscriber,
   Requestable,
-} from "rsocket-core";
-import { Codec } from "rsocket-messaging";
+} from "@rsocket-ts/core";
+import { Codec } from "@rsocket-ts/messaging";
 import { Observer, Subscription } from "rxjs";
 import { applyMixins } from "./Utils";
 

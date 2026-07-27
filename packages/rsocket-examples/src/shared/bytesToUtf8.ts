@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Bytes } from "rsocket-core";
+import { Bytes } from "@rsocket-ts/core";
 
 /**
  * Decodes payload bytes to a UTF-8 string for human-readable logging.

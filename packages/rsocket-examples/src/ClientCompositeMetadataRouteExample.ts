@@ -1,11 +1,11 @@
-import { Bytes, RSocket, RSocketConnector } from "rsocket-core";
+import { Bytes, RSocket, RSocketConnector } from "@rsocket-ts/core";
 import { bytesToUtf8 } from "./shared/bytesToUtf8";
-import { TcpClientTransport } from "rsocket-tcp-client";
+import { TcpClientTransport } from "@rsocket-ts/tcp-client";
 import {
   encodeCompositeMetadata,
   encodeRoute,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 import Logger from "./shared/logger";
 import { exit } from "process";
 import MESSAGE_RSOCKET_ROUTING = WellKnownMimeType.MESSAGE_RSOCKET_ROUTING;

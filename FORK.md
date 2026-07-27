@@ -6,7 +6,7 @@
 [#158](https://github.com/rsocket/rsocket-js/issues/158)).
 
 We develop **independently**: we do not open pull requests against upstream and do not track
-upstream releases. Packages are versioned `2.0.0` and will be published under a **new npm scope**
+upstream releases. Packages are versioned `2.0.0` and published under the **`@rsocket-ts`** npm scope
 (the bare `rsocket-*` names are owned upstream). This is a young fork — breaking changes are still
 possible between releases.
 
@@ -33,7 +33,7 @@ started from.
 | Binary type   | `Buffer` (Node-only)    | **`Uint8Array`** (browser-neutral)             | New oracle-tested `Bytes.ts` byte-helpers in core, re-exported as `Bytes`; all packages migrated                                                   |
 | Module format | CJS only (`main`)       | **Dual ESM + CJS**                             | Build tool `tsc` → **tsup**; each package emits `index.{js,mjs,d.ts,d.mts}` + sourcemaps behind a package.json `exports` map + `sideEffects:false` |
 | Lint / format | ESLint 8 / Prettier 2   | **ESLint 9 flat config / Prettier 3**          | `eslint.config.js`; lint = Prettier-as-error                                                                                                       |
-| Test runner   | jest (older)            | **jest 30** + ts-jest; tests import **source** | `moduleNameMapper` maps `rsocket-*` → `packages/*/src`                                                                                             |
+| Test runner   | jest (older)            | **jest 30** + ts-jest; tests import **source** | `moduleNameMapper` maps `@rsocket-ts/*` → `packages/rsocket-*/src`                                                                                 |
 | GraphQL       | Apollo Server v3        | **Apollo Server v5 / Client v4**               | Rewrote `graphql-apollo-server`/`-link` onto the new APIs                                                                                          |
 | `baseUrl`     | set (deprecated in TS6) | **removed**                                    | `paths` resolve without it since TS 5.4                                                                                                            |
 
@@ -67,7 +67,7 @@ Each fix ships with a regression test.
 
 | Change                          | How                                                                                                                                                  |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Bytes` byte-helpers exposed    | `import { Bytes } from "rsocket-core"` — BE int read/write, utf8/ascii, `concat`/`alloc`, zero-copy `subarray`                                       |
+| `Bytes` byte-helpers exposed    | `import { Bytes } from "@rsocket-ts/core"` — BE int read/write, utf8/ascii, `concat`/`alloc`, zero-copy `subarray`                                   |
 | Examples modernized             | `Buffer`→`Uint8Array`, ~59 `strict` errors cleared, `new WebSocket.Server` → `{ WebSocketServer }`, readable log output via a `bytesToUtf8()` helper |
 | Package encapsulation           | The `exports` map blocks deep `/src` imports — only the public entry is importable                                                                   |
 | Buffer forbidden in core source | ESLint `no-restricted-globals` bans the `Buffer` global in `rsocket-core/src` (tests + Node transports exempt)                                       |

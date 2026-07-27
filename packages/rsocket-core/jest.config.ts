@@ -5,7 +5,7 @@ const config: Config.InitialOptions = {
   moduleNameMapper: {
     // Mirrors the rsocket-* path aliases from the root tsconfig.json,
     // inlined to stay loader-agnostic under jest 30 config resolution.
-    "^rsocket-(.*)$": "<rootDir>/../../packages/rsocket-$1/src",
+    "^@rsocket-ts/(.*)$": "<rootDir>/../../packages/rsocket-$1/src",
   },
   modulePathIgnorePatterns: ["<rootDir>/__tests__/test-utils"],
   collectCoverage: true,

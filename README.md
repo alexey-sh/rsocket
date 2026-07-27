@@ -35,23 +35,22 @@ comparison with upstream lives in **[FORK.md](./FORK.md)**.
 
 ## Installation
 
-Individual packages published from this monorepo are distributed via NPM.
+Packages are published to NPM under the [`@rsocket-ts`](https://www.npmjs.com/org/rsocket-ts) scope,
+all sharing one version (fixed versioning). The unscoped `rsocket-*` names on npm belong to upstream
+and are unrelated to this fork.
 
-Packages are independently versioned.
+> **Note:** the first `@rsocket-ts` release is imminent — build from source until it lands.
 
-> **Note:** the npm links below are the upstream package names (`rsocket-*`, owned upstream). This
-> fork is not yet published; it will ship under a new npm scope. For now, build from source.
-
-- [rsocket-core](https://www.npmjs.com/package/rsocket-core)
-- [rsocket-messaging](https://www.npmjs.com/package/rsocket-messaging)
-- [rsocket-composite-metadata](https://www.npmjs.com/package/rsocket-composite-metadata)
-- [rsocket-tcp-client](https://www.npmjs.com/package/rsocket-tcp-client)
-- [rsocket-tcp-server](https://www.npmjs.com/package/rsocket-tcp-server)
-- [rsocket-websocket-client](https://www.npmjs.com/package/rsocket-websocket-client)
-- [rsocket-websocket-server](https://www.npmjs.com/package/rsocket-websocket-server)
-- [rsocket-adapter-rxjs](https://www.npmjs.com/package/rsocket-adapter-rxjs)
-- [rsocket-graphql-apollo-link](https://www.npmjs.com/package/rsocket-graphql-apollo-link)
-- [rsocket-graphql-apollo-server](https://www.npmjs.com/package/rsocket-graphql-apollo-server)
+- [@rsocket-ts/core](https://www.npmjs.com/package/@rsocket-ts/core)
+- [@rsocket-ts/messaging](https://www.npmjs.com/package/@rsocket-ts/messaging)
+- [@rsocket-ts/composite-metadata](https://www.npmjs.com/package/@rsocket-ts/composite-metadata)
+- [@rsocket-ts/tcp-client](https://www.npmjs.com/package/@rsocket-ts/tcp-client)
+- [@rsocket-ts/tcp-server](https://www.npmjs.com/package/@rsocket-ts/tcp-server)
+- [@rsocket-ts/websocket-client](https://www.npmjs.com/package/@rsocket-ts/websocket-client)
+- [@rsocket-ts/websocket-server](https://www.npmjs.com/package/@rsocket-ts/websocket-server)
+- [@rsocket-ts/adapter-rxjs](https://www.npmjs.com/package/@rsocket-ts/adapter-rxjs)
+- [@rsocket-ts/graphql-apollo-link](https://www.npmjs.com/package/@rsocket-ts/graphql-apollo-link)
+- [@rsocket-ts/graphql-apollo-server](https://www.npmjs.com/package/@rsocket-ts/graphql-apollo-server)
 
 ## Contributing
 

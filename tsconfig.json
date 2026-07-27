@@ -8,7 +8,7 @@
     // skipping emit for the whole program when any single test file errors.
     "noEmitOnError": false,
     "paths": {
-      "rsocket-*": [
+      "@rsocket-ts/*": [
         "packages/rsocket-*/src"
       ]
     }

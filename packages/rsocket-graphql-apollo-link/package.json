@@ -1,5 +1,5 @@
 {
-  "name": "rsocket-graphql-apollo-link",
+  "name": "@rsocket-ts/graphql-apollo-link",
   "version": "2.0.0",
   "license": "Apache-2.0",
   "engines": {
@@ -26,6 +26,9 @@
     "LICENSE",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "yarn run clean && yarn run compile",
     "clean": "rimraf ./dist",
@@ -35,8 +38,8 @@
   },
   "dependencies": {
     "@apollo/client": "^4.2.6",
-    "rsocket-composite-metadata": "^2.0.0",
-    "rsocket-core": "^2.0.0",
+    "@rsocket-ts/composite-metadata": "^2.0.0",
+    "@rsocket-ts/core": "^2.0.0",
     "graphql": "^16.11.0",
     "rxjs": "^7.8.2"
   },

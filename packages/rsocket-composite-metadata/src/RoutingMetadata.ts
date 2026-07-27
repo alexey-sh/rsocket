@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Bytes } from "rsocket-core";
+import { Bytes } from "@rsocket-ts/core";
 
 export class RoutingMetadata implements Iterable<string> {
   _buffer: Uint8Array;

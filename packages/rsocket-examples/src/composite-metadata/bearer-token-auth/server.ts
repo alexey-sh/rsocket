@@ -24,15 +24,15 @@ import {
   Payload,
   RSocketError,
   RSocketServer,
-} from "rsocket-core";
-import { TcpServerTransport } from "rsocket-tcp-server";
+} from "@rsocket-ts/core";
+import { TcpServerTransport } from "@rsocket-ts/tcp-server";
 import {
   decodeAuthMetadata,
   decodeCompositeMetadata,
   decodeRoutes,
   WellKnownAuthType,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 import { exit } from "process";
 import Logger from "../../shared/logger";
 import MESSAGE_RSOCKET_ROUTING = WellKnownMimeType.MESSAGE_RSOCKET_ROUTING;

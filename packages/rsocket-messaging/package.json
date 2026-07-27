@@ -1,5 +1,5 @@
 {
-  "name": "rsocket-messaging",
+  "name": "@rsocket-ts/messaging",
   "version": "2.0.0",
   "license": "Apache-2.0",
   "engines": {
@@ -36,8 +36,8 @@
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "dependencies": {
-    "rsocket-composite-metadata": "^2.0.0",
-    "rsocket-core": "^2.0.0"
+    "@rsocket-ts/composite-metadata": "^2.0.0",
+    "@rsocket-ts/core": "^2.0.0"
   },
   "devDependencies": {
     "rimraf": "^6.1.3",

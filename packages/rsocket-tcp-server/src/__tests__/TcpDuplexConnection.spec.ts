@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { FrameTypes, serializeFrameWithLength } from "rsocket-core";
+import { FrameTypes, serializeFrameWithLength } from "@rsocket-ts/core";
 import { TcpDuplexConnection } from "../TcpDuplexConnection";
 
 function mockSocket(): any {

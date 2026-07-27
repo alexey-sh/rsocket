@@ -12,7 +12,8 @@ upstream issue #158. It is a young fork, so breaking changes are still possible 
 upstream `0.x.x` sources are unrelated to work here.
 
 It is a **Lerna + Yarn-workspaces monorepo** with packages under `packages/*` (fixed-versioned at
-`2.0.0`), each published separately to NPM.
+`2.0.0`), each published to NPM under the `@rsocket-ts` scope (e.g. `@rsocket-ts/core`). Directory
+names keep the `rsocket-` prefix (`packages/rsocket-core`); the published package name does not.
 
 ## Protocol reference
 
@@ -26,34 +27,35 @@ Spec → code mapping: frame types/flags → `Frames.ts`; header/length codec �
 
 ## Commands
 
-Node is pinned to **v18.12.1** (`.nvmrc`); use `nvm use`. Package manager is **Yarn** (classic, workspaces).
+Node is pinned to **v24** (`.nvmrc`, `engines: >=22`); use `nvm use`. Package manager is **Yarn** (classic, workspaces).
 
 From the repo root:
 
-- `yarn build` — build all packages (`lerna run build` → `tsc -p tsconfig.build.json` per package into `dist/`).
+- `yarn build` — build all packages (`lerna run build` → `tsup` per package into `dist/`; dual CJS+ESM + `.d.ts`).
 - `yarn test` — test all packages. **Note:** the `pretest` hook runs `yarn clean` first (wipes all `dist/` and `coverage/`).
 - `yarn lint` / `yarn lint:fix` — ESLint over all `js,ts`. Linting is effectively **Prettier as an error rule**, so `lint:fix` = format.
 - `yarn clean` — remove all `dist/` output and `coverage/`.
+- `yarn check:exports` — build, then validate every package's `exports`/types with `@arethetypeswrong/cli`.
 
 Per-package (avoids the clean-everything pretest hook):
 
-- `yarn workspace rsocket-core test` — test one package.
-- `yarn workspace rsocket-core build` — build one package.
+- `yarn workspace @rsocket-ts/core test` — test one package.
+- `yarn workspace @rsocket-ts/core build` — build one package.
 
 Single test file / single test (run inside the package dir, since the package `test` script is just `yarn jest`):
 
 - `cd packages/rsocket-core && yarn jest RSocketConnector` — files matching a pattern.
 - `cd packages/rsocket-core && yarn jest -t "resumes the stream"` — tests matching a name.
 
-Run an example (from `rsocket-examples`, uses `ts-node`):
+Run an example (from `@rsocket-ts/examples`, uses `ts-node`):
 
-- `yarn workspace rsocket-examples start-client-server-request-response-tcp` — see that package's `package.json` `scripts` for the full list of `start-*` targets.
+- `yarn workspace @rsocket-ts/examples start-client-server-request-response-tcp` — see that package's `package.json` `scripts` for the full list of `start-*` targets.
 
 ### Important build/test wiring
 
-- **Tests import source, not build output.** `jest.config.ts` uses `ts-jest` + a `moduleNameMapper` derived from the root `tsconfig.json` `paths`, which maps `rsocket-*` → `packages/rsocket-*/src`. So cross-package imports resolve to live TypeScript source during tests/dev, and to compiled `dist/` only after `yarn build`. You do **not** need to build dependencies before testing a package.
-- Builds use `noEmitOnError: true` — any TS error fails the build.
-- Only 5 packages have tests: `rsocket-core`, `rsocket-tcp-client`, `rsocket-tcp-server`, `rsocket-websocket-client`, `rsocket-composite-metadata`. The rest (`rsocket-messaging`, `rsocket-adapter-rxjs`, `rsocket-websocket-server`, both `graphql-*`, `examples`) have **no test suite** — verify changes to them via examples or by building.
+- **Tests import source, not build output.** Each package's `jest.config.ts` uses `ts-jest` + a `moduleNameMapper` that mirrors the root `tsconfig.json` `paths`, mapping `@rsocket-ts/*` → `packages/rsocket-*/src`. So cross-package imports resolve to live TypeScript source during tests/dev, and to compiled `dist/` only after `yarn build`. You do **not** need to build dependencies before testing a package.
+- Builds use `tsup` (esbuild); the `.d.ts` step type-checks against `tsconfig.build.json`, so a type error there fails the build.
+- Only 6 packages have tests: `@rsocket-ts/core`, `@rsocket-ts/tcp-client`, `@rsocket-ts/tcp-server`, `@rsocket-ts/websocket-client`, `@rsocket-ts/websocket-server`, `@rsocket-ts/composite-metadata`. The rest (`@rsocket-ts/messaging`, `@rsocket-ts/adapter-rxjs`, both `graphql-*`, `examples`) have **no test suite** — verify changes to them via examples or by building.
 
 ## Architecture
 
@@ -64,13 +66,14 @@ transports          higher-level / ergonomics
 tcp-{client,server}  composite-metadata → messaging → adapter-rxjs
 websocket-{c,s}      graphql-apollo-{link,server}
         \                    /
-         → rsocket-core ←
+         → core ←
 ```
 
-`rsocket-core` depends on nothing. Every other package depends on it (directly or transitively)
-and packages reference each other by published name (`rsocket-core`), never by relative path.
+All packages are published as `@rsocket-ts/*`. `@rsocket-ts/core` depends on nothing. Every other
+package depends on it (directly or transitively) and packages reference each other by published name
+(`@rsocket-ts/core`), never by relative path.
 
-### rsocket-core — the protocol engine (transport-agnostic)
+### @rsocket-ts/core — the protocol engine (transport-agnostic)
 
 The mental model: **core speaks frames and Reactive-Streams callbacks; it never touches sockets and never exposes Promises/Observables.**
 
@@ -89,24 +92,24 @@ The mental model: **core speaks frames and Reactive-Streams callbacks; it never 
 
 Each implements `ClientTransport`/`ServerTransport` from core and provides a `*DuplexConnection`
 that turns raw bytes into frames and feeds the multiplexer/demultiplexer. They depend on core only.
-`XxxClientTransport` + `XxxDuplexConnection` is the consistent shape (see `rsocket-tcp-client`,
-`rsocket-websocket-client`). WebSocket client works in the browser and Node (via `ws`).
+`XxxClientTransport` + `XxxDuplexConnection` is the consistent shape (see `@rsocket-ts/tcp-client`,
+`@rsocket-ts/websocket-client`). WebSocket client works in the browser and Node (via `ws`).
 
 ### Higher-level packages
 
-- **`rsocket-composite-metadata`** — RSocket composite-metadata encoding plus well-known MIME
+- **`@rsocket-ts/composite-metadata`** — RSocket composite-metadata encoding plus well-known MIME
   and auth type tables (`WellKnownMimeType`, `WellKnownAuthType`), `RoutingMetadata`, `AuthMetadata`.
   This is how you attach routing keys (Spring-style `route`) and auth to payloads.
-- **`rsocket-messaging`** — routing-oriented requester API built on composite-metadata.
-- **`rsocket-adapter-rxjs`** — bridges core's callback/`request(n)` world to **RxJS Observables**
+- **`@rsocket-ts/messaging`** — routing-oriented requester API built on composite-metadata.
+- **`@rsocket-ts/adapter-rxjs`** — bridges core's callback/`request(n)` world to **RxJS Observables**
   (`Requesters`, `Responders`). This is where prefetching/buffering between Reactive Streams and Rx happens.
-- **`rsocket-graphql-apollo-link` / `-server`** — GraphQL-over-RSocket via Apollo.
+- **`@rsocket-ts/graphql-apollo-link` / `-server`** — GraphQL-over-RSocket via Apollo.
 
-### rsocket-examples
+### @rsocket-ts/examples
 
 Runnable, `private` (never published) reference programs run through `ts-node` + `tsconfig-paths`.
 The best source of end-to-end usage patterns for each interaction model and transport.
 
 ## Releasing
 
-Fixed versioning via `lerna version` (all packages share one version; creates git tags per `pkg@version`; tags are **not** auto-pushed). Publishing is done by manually triggering the `Test, Build, Release` GitHub workflow, which only publishes versions not already on NPM. Allowed release branch: `main`. See `RELEASE.md`.
+Fixed versioning via `lerna version` (all packages share one version; creates git tags per `pkg@version`; tags are **not** auto-pushed). Packages publish to the `@rsocket-ts` npm scope (public — each has `publishConfig.access = "public"`). Publishing is done by manually triggering the `Test, Build, Release` GitHub workflow, which only publishes versions not already on NPM. Allowed release branch: `main`. See `RELEASE.md`.

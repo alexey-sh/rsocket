@@ -17,12 +17,12 @@
 "use strict";
 
 import { ApolloLink, Observable } from "@apollo/client";
-import { Bytes, Payload, RSocket } from "rsocket-core";
+import { Bytes, Payload, RSocket } from "@rsocket-ts/core";
 import {
   encodeCompositeMetadata,
   encodeRoutes,
   WellKnownMimeType,
-} from "rsocket-composite-metadata";
+} from "@rsocket-ts/composite-metadata";
 import { print } from "graphql";
 
 type QueryLinkOptions = {

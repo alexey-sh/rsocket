@@ -22,10 +22,10 @@ import {
   Payload,
   RSocketConnector,
   RSocketServer,
-} from "rsocket-core";
+} from "@rsocket-ts/core";
 import { bytesToUtf8 } from "../shared/bytesToUtf8";
-import { WebsocketClientTransport } from "rsocket-websocket-client";
-import { WebsocketServerTransport } from "rsocket-websocket-server";
+import { WebsocketClientTransport } from "@rsocket-ts/websocket-client";
+import { WebsocketServerTransport } from "@rsocket-ts/websocket-server";
 import { exit } from "process";
 import { WebSocket, WebSocketServer } from "ws";
 

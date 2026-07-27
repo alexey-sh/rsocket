@@ -7,7 +7,7 @@ import {
   Payload,
   Requestable,
   RSocket,
-} from "rsocket-core";
+} from "@rsocket-ts/core";
 import {
   ApolloServer,
   ApolloServerOptions,

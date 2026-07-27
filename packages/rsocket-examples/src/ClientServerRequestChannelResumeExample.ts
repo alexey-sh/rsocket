@@ -25,11 +25,11 @@ import {
   RSocket,
   RSocketConnector,
   RSocketServer,
-} from "rsocket-core";
+} from "@rsocket-ts/core";
 import { bytesToUtf8 } from "./shared/bytesToUtf8";
 import { exit } from "process";
-import { TcpClientTransport } from "rsocket-tcp-client";
-import { TcpServerTransport } from "rsocket-tcp-server";
+import { TcpClientTransport } from "@rsocket-ts/tcp-client";
+import { TcpServerTransport } from "@rsocket-ts/tcp-server";
 
 async function main() {
   const server = new RSocketServer({

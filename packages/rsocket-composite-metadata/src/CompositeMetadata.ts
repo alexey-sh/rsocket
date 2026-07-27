@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Bytes } from "rsocket-core";
+import { Bytes } from "@rsocket-ts/core";
 import { WellKnownMimeType } from "./WellKnownMimeType";
 
 export class CompositeMetadata implements Iterable<Entry> {

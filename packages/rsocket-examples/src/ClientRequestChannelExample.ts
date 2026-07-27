@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Bytes, RSocketConnector } from "rsocket-core";
+import { Bytes, RSocketConnector } from "@rsocket-ts/core";
 import { bytesToUtf8 } from "./shared/bytesToUtf8";
-import { WebsocketClientTransport } from "rsocket-websocket-client";
+import { WebsocketClientTransport } from "@rsocket-ts/websocket-client";
 import { exit } from "process";
 import WebSocket from "ws";
 

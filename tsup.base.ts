@@ -23,8 +23,8 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   // Never bundle sibling workspace packages; deps/peerDeps are external by
-  // default, this covers the rsocket-* graph explicitly.
-  external: [/^rsocket-/],
+  // default, this covers the @rsocket-ts/* graph explicitly.
+  external: [/^@rsocket-ts\//],
   outExtension({ format }) {
     return { js: format === "esm" ? ".mjs" : ".js" };
   },

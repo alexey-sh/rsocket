@@ -57,7 +57,7 @@ export type Encoding = "ascii" | "base64" | "hex" | "utf8";
 
 // The uint24/uint64 read/write helpers now live in Bytes (over Uint8Array).
 // Re-export them for API compatibility — rsocket-composite-metadata imports
-// readUInt24BE/writeUInt24BE from "rsocket-core".
+// readUInt24BE/writeUInt24BE from "@rsocket-ts/core".
 export {
   readUInt24BE,
   writeUInt24BE,
