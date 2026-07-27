@@ -39,7 +39,7 @@ Packages are published to NPM under the [`@rsocket-ts`](https://www.npmjs.com/or
 all sharing one version (fixed versioning). The unscoped `rsocket-*` names on npm belong to upstream
 and are unrelated to this fork.
 
-> **Note:** the first `@rsocket-ts` release is imminent — build from source until it lands.
+> **`2.0.0` is live on npm.** Install e.g. `npm i @rsocket-ts/core` (or `yarn add @rsocket-ts/core`).
 
 - [@rsocket-ts/core](https://www.npmjs.com/package/@rsocket-ts/core)
 - [@rsocket-ts/messaging](https://www.npmjs.com/package/@rsocket-ts/messaging)
