@@ -78,6 +78,22 @@ ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || die "not inside a git repos
 cd "$ROOT"
 [ -d packages ] || die "no packages/ directory in $ROOT -- is this the monorepo root?"
 
+# `yarn run` (and lerna) export their own npm_config_* environment, which npm
+# prefers over ~/.npmrc. Two problems: registry becomes
+# https://registry.yarnpkg.com, so `yarn pub` would publish to yarn's mirror
+# instead of npm; and npm warns "Unknown env config" for a batch of options it
+# no longer recognises. Drop the plain option names so npm resolves config the
+# way it does when invoked directly. Credential-bearing entries are left alone,
+# both the `//registry.../:_authToken` form (its name contains `/` and `:`, so
+# the pattern below never matches it) and anything auth-shaped.
+for _var in $(env | sed -n 's/^\(npm_config_[a-z0-9_]*\)=.*/\1/p'); do
+  case "$_var" in
+    *auth*|*token*|*otp*|*password*|*username*|*email*|*cert*|*key*) continue ;;
+  esac
+  unset "$_var"
+done
+unset _var
+
 # Revert the `gitHead` field npm adds to each package.json it packs, but only
 # when that is the *only* change, so a genuine edit is never discarded.
 restore_git_head() {
@@ -207,10 +223,27 @@ while IFS=$'\t' read -r name version dir access; do
 done <<< "$PKG_LINES"
 ok "$PKG_COUNT packages, all public, all at version $VERSION"
 
-if git rev-parse -q --verify "refs/tags/@rsocket-ts/core@$VERSION" >/dev/null; then
+# Fixed versioning tags the release once as `v<version>`; the per-package
+# `<name>@<version>` form is what independent mode would produce.
+if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+  ok "git tag v$VERSION exists"
+elif git rev-parse -q --verify "refs/tags/@rsocket-ts/core@$VERSION" >/dev/null; then
   ok "git tag @rsocket-ts/core@$VERSION exists"
 else
-  warn "no git tag @rsocket-ts/core@$VERSION -- did you run 'npx lerna version'?"
+  warn "no git tag v$VERSION -- did you run 'npx lerna version'?"
+fi
+
+# lerna version does not push. Publishing a version whose commit and tag exist
+# only locally leaves nothing to trace the release back to.
+if UPSTREAM=$(git rev-parse --abbrev-ref '@{u}' 2>/dev/null); then
+  UNPUSHED=$(git rev-list --count "$UPSTREAM..HEAD")
+  if [ "$UNPUSHED" -gt 0 ]; then
+    warn "$UNPUSHED local commit(s) not on $UPSTREAM -- run: git push --follow-tags"
+  else
+    ok "in sync with $UPSTREAM"
+  fi
+else
+  warn "no upstream branch configured -- cannot tell whether this commit is pushed"
 fi
 
 # ------------------------------------------------------------------ plan ------
@@ -274,7 +307,9 @@ PUBLISHED=""
 FAILED=""
 while IFS=$'\t' read -r name version dir; do
   [ -n "$name" ] || continue
-  set -- publish --access public --tag "$DIST_TAG" "./$dir"
+  # --registry is redundant given the preflight check, but it pins the upload
+  # target so no config layer can redirect it.
+  set -- publish --access public --registry "$REGISTRY" --tag "$DIST_TAG" "./$dir"
   [ "$DRY_RUN" -eq 1 ] && set -- "$@" --dry-run
   [ -n "$OTP" ] && set -- "$@" --otp "$OTP"
 

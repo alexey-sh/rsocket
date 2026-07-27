@@ -6,16 +6,18 @@ How to publish new releases for this project.
 
 [semver](https://semver.org/) should be followed when deciding new release versions.
 
-You can either set versions in the `package.json` files manually, or use the `lerna version` command to set them via the Lerna CLI. When setting versions manually, you will also need to set the git tags for each package and version. For this reason, it is recommended you use the `lerna version` command, which will create these tags automatically.
+You can either set versions in the `package.json` files manually, or use the `lerna version` command to set them via the Lerna CLI. When setting versions manually, you will also need to set the git tag yourself. For this reason, it is recommended you use the `lerna version` command, which will create it automatically.
 
-ex: `@rsocket-ts/adapter-rxjs@2.0.0`
+This repo uses **fixed versioning** (`lerna.json` pins one `version` for every package), so a release
+produces a single tag named after the version — `v2.0.1` — not one tag per package.
 
-Lerna will not push the git tags after creation. You should push the git tags once you are confident in your changes.
+Lerna will not push the commit or the tag after creating them. Push both once you are confident in
+your changes: `git push --follow-tags`.
 
 ### Example
 
 ```
-lerna version prerelease --sign-git-commit
+npx lerna version patch
 ```
 
 ## Publishing
