@@ -15,7 +15,9 @@
 #   -n, --dry-run           Pack and validate, upload nothing (npm --dry-run).
 #   -y, --yes               Do not ask for confirmation.
 #   -t, --tag <dist-tag>    Publish under this dist-tag (default: latest).
-#       --otp <code>        2FA one-time password to pass to npm.
+#       --otp <code>        2FA one-time password to pass to npm. npm can also
+#                           prompt interactively, but that is once per package;
+#                           a Granular Access Token with 2FA bypass avoids both.
 #       --skip-gates        Skip lint/test/build+attw. For retrying a run that
 #                           already passed them.
 #       --allow-any-branch  Permit publishing from a branch other than main.
@@ -252,7 +254,7 @@ step "Plan"
 
 TO_PUBLISH=""
 ALREADY=""
-while IFS=$'\t' read -r name version dir access; do
+while IFS=$'\t' read -r name version dir access <&3; do
   [ -n "$name" ] || continue
   if npm view "$name@$version" version >/dev/null 2>&1; then
     ALREADY="$ALREADY$name@$version"$'\n'
@@ -261,7 +263,7 @@ while IFS=$'\t' read -r name version dir access; do
     TO_PUBLISH="$TO_PUBLISH$name"$'\t'"$version"$'\t'"$dir"$'\n'
     info "$name@$version -- to publish"
   fi
-done <<< "$PKG_LINES"
+done 3<<< "$PKG_LINES"
 
 if [ -z "$TO_PUBLISH" ]; then
   step "Nothing to do"
@@ -305,7 +307,10 @@ step "Publishing"
 
 PUBLISHED=""
 FAILED=""
-while IFS=$'\t' read -r name version dir; do
+# Feed the list on fd 3, not stdin: npm must keep the terminal so it can prompt
+# for a 2FA one-time password (or run its browser auth flow). Reading the loop
+# from stdin makes npm inherit the herestring instead and fail with EOTP.
+while IFS=$'\t' read -r name version dir <&3; do
   [ -n "$name" ] || continue
   # --registry is redundant given the preflight check, but it pins the upload
   # target so no config layer can redirect it.
@@ -322,7 +327,7 @@ while IFS=$'\t' read -r name version dir; do
     warn "$name@$version FAILED -- stopping here"
     break
   fi
-done <<< "$TO_PUBLISH"
+done 3<<< "$TO_PUBLISH"
 
 # ---------------------------------------------------------------- verify ------
 
@@ -333,10 +338,10 @@ if [ "$DRY_RUN" -eq 0 ] && [ -n "$PUBLISHED" ]; then
   attempt=1
   while [ "$attempt" -le 6 ]; do
     missing=""
-    while IFS= read -r spec; do
+    while IFS= read -r spec <&3; do
       [ -n "$spec" ] || continue
       npm view "$spec" version >/dev/null 2>&1 || missing="$missing$spec"$'\n'
-    done <<< "$PUBLISHED"
+    done 3<<< "$PUBLISHED"
     [ -z "$missing" ] && break
     info "not visible yet, retrying in 15s (attempt $attempt/6)"
     sleep 15
@@ -357,6 +362,12 @@ step "Summary"
 
 if [ -n "$FAILED" ]; then
   printf '\n'
+  warn "if npm reported EOTP or E403, this account requires 2FA to publish:"
+  warn "  reliable -- create a Granular Access Token with 'Read and write' on the @rsocket-ts"
+  warn "  scope and the rsocket-ts org (it bypasses the OTP prompt), then:"
+  warn "      npm config set //registry.npmjs.org/:_authToken=npm_xxx"
+  warn "  one-off -- 'yarn pub --otp <code>', but a TOTP code expires in 30s and every package"
+  warn "  is rebuilt before upload, so one code will not cover all of them."
   die "$FAILED failed to publish. Fix the cause and re-run -- already-published packages are skipped automatically (add --skip-gates to go straight to publishing)."
 fi
 
