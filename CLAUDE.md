@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`rsocket-js` is a JavaScript/TypeScript implementation of the [RSocket](https://rsocket.io/)
+`@rsocket-ts` is a JavaScript/TypeScript implementation of the [RSocket](https://rsocket.io/)
 protocol (Reactive Streams semantics over an async binary transport, for browsers and Node.js).
 
 This repository is a **ground-up rewrite from Flow to TypeScript** — an independent fork continuing

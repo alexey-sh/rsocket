@@ -1,4 +1,4 @@
-# rsocket-js — [alexey-sh fork](https://github.com/alexey-sh/rsocket)
+# @rsocket-ts — an independent [rsocket-js](https://github.com/rsocket/rsocket-js) fork
 
 > **This is an independent fork** of [`rsocket/rsocket-js`](https://github.com/rsocket/rsocket-js),
 > continuing the stalled Flow → TypeScript 1.0 rewrite. **See [FORK.md](./FORK.md) for exactly how
