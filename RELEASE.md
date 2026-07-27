@@ -47,11 +47,13 @@ Two things to know:
   into every `package.json` it packs, which dirties the working tree; lerna's `EUNCOMMIT` pre-check
   then aborts the run before it reaches NPM. The script publishes per package instead, and reverts
   that `gitHead` pollution afterwards.
-- **Publishing requires 2FA.** Either log in interactively and enter an OTP per package
-  (`yarn pub --otp <code>`), or configure a Granular Access Token with *Read and write* on the
-  `@rsocket-ts` scope and the `rsocket-ts` organization — such a token bypasses the OTP prompt.
-  Note that a token too restricted to publish can still answer `npm whoami`, so a successful
-  preflight is not proof that publishing will be authorized.
+- **Publishing requires 2FA.** npm prints an auth URL on the first package; authorizing writes
+  there for 5 minutes covers the entire run, which takes about 40 seconds for all packages even
+  from a cold `dist/`. For a non-interactive release, configure a Granular Access Token with
+  *Read and write* on the `@rsocket-ts` scope and the `rsocket-ts` organization — such a token
+  bypasses the OTP prompt (mind the expiry, which npm defaults to 30 days). Note that a token too
+  restricted to publish can still answer `npm whoami`, so a successful preflight is not proof that
+  publishing will be authorized.
 
 ### On CI
 

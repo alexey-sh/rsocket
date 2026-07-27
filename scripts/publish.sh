@@ -15,9 +15,10 @@
 #   -n, --dry-run           Pack and validate, upload nothing (npm --dry-run).
 #   -y, --yes               Do not ask for confirmation.
 #   -t, --tag <dist-tag>    Publish under this dist-tag (default: latest).
-#       --otp <code>        2FA one-time password to pass to npm. npm can also
-#                           prompt interactively, but that is once per package;
-#                           a Granular Access Token with 2FA bypass avoids both.
+#       --otp <code>        2FA one-time password to pass to npm. Usually not
+#                           needed: npm's browser auth prompt can authorize
+#                           writes for 5 minutes, which covers the whole run
+#                           (~40s for all packages, even from a cold dist/).
 #       --skip-gates        Skip lint/test/build+attw. For retrying a run that
 #                           already passed them.
 #       --allow-any-branch  Permit publishing from a branch other than main.
@@ -363,11 +364,11 @@ step "Summary"
 if [ -n "$FAILED" ]; then
   printf '\n'
   warn "if npm reported EOTP or E403, this account requires 2FA to publish:"
-  warn "  reliable -- create a Granular Access Token with 'Read and write' on the @rsocket-ts"
-  warn "  scope and the rsocket-ts org (it bypasses the OTP prompt), then:"
+  warn "  interactive -- npm prints an auth URL; open it and authorize writes for 5 minutes,"
+  warn "  which covers the whole run (all packages take ~40s, even from a cold dist/)."
+  warn "  non-interactive -- create a Granular Access Token with 'Read and write' on the"
+  warn "  @rsocket-ts scope and the rsocket-ts org (it bypasses the OTP prompt), then:"
   warn "      npm config set //registry.npmjs.org/:_authToken=npm_xxx"
-  warn "  one-off -- 'yarn pub --otp <code>', but a TOTP code expires in 30s and every package"
-  warn "  is rebuilt before upload, so one code will not cover all of them."
   die "$FAILED failed to publish. Fix the cause and re-run -- already-published packages are skipped automatically (add --skip-gates to go straight to publishing)."
 fi
 
